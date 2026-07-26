@@ -702,6 +702,10 @@
   .train-day-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 20px; }
   .train-day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
   .train-day-header h3 { margin: 0; color: var(--series-orange); }
+  .train-day-header-clickable { cursor: pointer; user-select: none; }
+  .train-day-arrow { display: inline-block; width: 14px; font-size: 12px; color: var(--text-muted); }
+  .train-day-count { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+  .train-day-content { margin-top: 4px; }
   .train-exercise { background: var(--surface-0); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
   .train-exercise-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
   .train-exercise-header .name { font-weight: 700; font-size: 14.5px; color: var(--text-primary); }
@@ -2687,6 +2691,7 @@ function trainBestSet(sets) {
 
 var trainScrollToDayId = null;
 var trainScrollToExId = null;
+var trainCollapsedDays = {};
 
 function renderTraining() {
   var list = document.getElementById('training-days-list');
@@ -2702,20 +2707,33 @@ function renderTraining() {
   }
 
   trainingState.days.forEach(function(day) {
+    if (!(day.id in trainCollapsedDays)) { trainCollapsedDays[day.id] = true; }
+    var belongsToScrollEx = trainScrollToExId && day.exercises.some(function(e) { return e.id === trainScrollToExId; });
+    if (trainScrollToDayId === day.id || belongsToScrollEx) { trainCollapsedDays[day.id] = false; }
+    var isCollapsed = trainCollapsedDays[day.id];
+
     var dayCard = document.createElement('div');
     dayCard.className = 'train-day-card';
     dayCard.dataset.dayId = day.id;
 
     var header = document.createElement('div');
-    header.className = 'train-day-header';
-    header.innerHTML = '<h3>' + trainEsc(day.name) + '</h3>';
+    header.className = 'train-day-header train-day-header-clickable';
+    header.innerHTML = '<h3><span class="train-day-arrow">' + (isCollapsed ? '▶' : '▼') + '</span> ' + trainEsc(day.name) + ' <span class="train-day-count">(' + day.exercises.length + ' Übung' + (day.exercises.length === 1 ? '' : 'en') + ')</span></h3>';
     var delDayBtn = document.createElement('button');
     delDayBtn.type = 'button';
     delDayBtn.className = 'train-small-btn danger';
     delDayBtn.textContent = 'Trainingstag löschen';
-    delDayBtn.onclick = function() { deleteTrainingDay(day.id); };
+    delDayBtn.onclick = function(e) { e.stopPropagation(); deleteTrainingDay(day.id); };
     header.appendChild(delDayBtn);
+    header.addEventListener('click', function() {
+      trainCollapsedDays[day.id] = !trainCollapsedDays[day.id];
+      renderTraining();
+    });
     dayCard.appendChild(header);
+
+    var contentWrap = document.createElement('div');
+    contentWrap.className = 'train-day-content';
+    if (isCollapsed) { contentWrap.style.display = 'none'; }
 
     day.exercises.forEach(function(ex) {
       var exDiv = document.createElement('div');
@@ -2841,7 +2859,7 @@ function renderTraining() {
 
       exDiv.appendChild(exBody);
 
-      dayCard.appendChild(exDiv);
+      contentWrap.appendChild(exDiv);
     });
 
     var addExRow = document.createElement('div');
@@ -2855,8 +2873,9 @@ function renderTraining() {
     addExBtn.textContent = 'Übung hinzufügen';
     addExBtn.onclick = function() { addTrainingExercise(day.id, addExBtn); };
     addExRow.appendChild(addExBtn);
-    dayCard.appendChild(addExRow);
+    contentWrap.appendChild(addExRow);
 
+    dayCard.appendChild(contentWrap);
     list.appendChild(dayCard);
   });
 
