@@ -714,6 +714,14 @@
   .train-sets-table th { text-align: left; color: var(--text-muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em; padding: 4px 6px; }
   .train-sets-table td { padding: 6px; border-top: 1px solid var(--grid); color: var(--text-secondary); }
   .train-empty-hint { font-size: 12.5px; color: var(--text-muted); padding: 4px 6px 10px; }
+  .train-progress-box { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; padding: 6px 6px 10px; color: var(--text-secondary); }
+  .train-progress-item { white-space: nowrap; }
+  .train-trend-up { color: var(--status-good, #4caf7d); font-weight: 600; }
+  .train-trend-down { color: var(--status-critical); font-weight: 600; }
+  .train-trend-same { color: var(--text-muted); }
+  .train-history { font-size: 11.5px; color: var(--text-muted); padding: 2px 6px 10px; border-top: 1px dashed var(--grid); margin-top: 2px; }
+  .train-history-title { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em; margin: 6px 0 4px; color: var(--text-muted); }
+  .train-history-line { padding: 2px 0; }
   .train-add-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .train-add-row input { padding: 7px 10px; background: var(--surface-1); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px; font-size: 13px; }
   .train-add-row input.train-num { width: 90px; }
@@ -2643,6 +2651,40 @@ function trainEsc(str) {
   return div.innerHTML;
 }
 
+/* ============ TRAININGSFORTSCHRITT (Vergleich zwischen Trainingseinheiten) ============ */
+/* Jeder Satz traegt schon ein Datum. Sets werden nach Datum in Trainingseinheiten
+   gruppiert (ein Datum = eine Einheit), damit die aktuelle Einheit mit der
+   letzten vorherigen Einheit derselben Uebung verglichen werden kann. */
+function trainVolume(set) { return (set.gewicht || 0) * (set.wdh || 0); }
+
+function trainGroupSetsByDate(sets) {
+  var order = [];
+  var byDate = {};
+  sets.forEach(function(set) {
+    if (!byDate[set.datum]) { byDate[set.datum] = []; order.push(set.datum); }
+    byDate[set.datum].push(set);
+  });
+  return order.map(function(d) { return { datum: d, sets: byDate[d] }; });
+}
+
+function trainCompareSet(curr, prev) {
+  if (!prev) { return { trend: 'neu', label: 'Neu' }; }
+  if (curr.gewicht > prev.gewicht) { return { trend: 'up', label: '↑ ' + (curr.gewicht - prev.gewicht).toFixed(1).replace(/\.0$/, '') + ' kg' }; }
+  if (curr.gewicht < prev.gewicht) { return { trend: 'down', label: '↓ ' + (prev.gewicht - curr.gewicht).toFixed(1).replace(/\.0$/, '') + ' kg' }; }
+  if (curr.wdh > prev.wdh) { return { trend: 'up', label: '↑ ' + (curr.wdh - prev.wdh) + ' Wdh.' }; }
+  if (curr.wdh < prev.wdh) { return { trend: 'down', label: '↓ ' + (prev.wdh - curr.wdh) + ' Wdh.' }; }
+  return { trend: 'same', label: '→ gleich' };
+}
+
+function trainBestSet(sets) {
+  if (!sets.length) { return null; }
+  var best = sets[0];
+  sets.forEach(function(s) {
+    if (s.gewicht > best.gewicht || (s.gewicht === best.gewicht && s.wdh > best.wdh)) { best = s; }
+  });
+  return best;
+}
+
 var trainScrollToDayId = null;
 var trainScrollToExId = null;
 
@@ -2699,13 +2741,44 @@ function renderTraining() {
       exLeft.className = 'train-exercise-left';
 
       if (ex.sets.length > 0) {
+        var sessions = trainGroupSetsByDate(ex.sets);
+        var latestSession = sessions[sessions.length - 1];
+        var prevSession = sessions.length > 1 ? sessions[sessions.length - 2] : null;
+        var best = trainBestSet(ex.sets);
+
+        var progressBox = document.createElement('div');
+        progressBox.className = 'train-progress-box';
+        var progressHtml = '';
+        if (best) {
+          progressHtml += '<span class="train-progress-item">Bestleistung: <strong>' + best.gewicht + ' kg × ' + best.wdh + '</strong> (' + trainEsc(best.datum) + ')</span>';
+        }
+        if (prevSession) {
+          var prevVol = prevSession.sets.reduce(function(sum, s) { return sum + trainVolume(s); }, 0);
+          var currVol = latestSession.sets.reduce(function(sum, s) { return sum + trainVolume(s); }, 0);
+          var diff = currVol - prevVol;
+          var pct = prevVol > 0 ? (diff / prevVol * 100) : 0;
+          var trendClass = diff > 0 ? 'train-trend-up' : (diff < 0 ? 'train-trend-down' : 'train-trend-same');
+          var arrow = diff > 0 ? '↑' : (diff < 0 ? '↓' : '→');
+          progressHtml += '<span class="train-progress-item ' + trendClass + '">Volumen vs. ' + trainEsc(prevSession.datum) + ': ' + arrow + ' ' + Math.abs(diff).toFixed(1).replace(/\.0$/, '') + ' kg (' + (pct >= 0 ? '+' : '') + pct.toFixed(0) + ' %)</span>';
+        } else {
+          progressHtml += '<span class="train-progress-item train-trend-same">Noch keine frühere Einheit zum Vergleich.</span>';
+        }
+        progressBox.innerHTML = progressHtml;
+        exLeft.appendChild(progressBox);
+
         var table = document.createElement('table');
         table.className = 'train-sets-table';
         var thead = document.createElement('thead');
-        thead.innerHTML = '<tr><th>Satz</th><th>Gewicht</th><th>Wdh.</th><th>Datum</th><th></th></tr>';
+        thead.innerHTML = '<tr><th>Satz</th><th>Gewicht</th><th>Wdh.</th><th>Trend</th><th>Datum</th><th></th></tr>';
         table.appendChild(thead);
         var tbody = document.createElement('tbody');
-        ex.sets.forEach(function(set, idx) {
+        latestSession.sets.forEach(function(set) {
+          var idx = ex.sets.indexOf(set);
+          var setIdxInSession = latestSession.sets.indexOf(set);
+          var prevSet = prevSession && prevSession.sets[setIdxInSession] ? prevSession.sets[setIdxInSession] : null;
+          var cmp = trainCompareSet(set, prevSet);
+          var trendClass = cmp.trend === 'up' ? 'train-trend-up' : (cmp.trend === 'down' ? 'train-trend-down' : 'train-trend-same');
+
           var tr = document.createElement('tr');
           var tdDel = document.createElement('td');
           var delSetBtn = document.createElement('button');
@@ -2715,12 +2788,26 @@ function renderTraining() {
           delSetBtn.style.padding = '3px 9px';
           delSetBtn.onclick = function() { deleteTrainingSet(day.id, ex.id, idx); };
           tdDel.appendChild(delSetBtn);
-          tr.innerHTML = '<td>' + (idx + 1) + '</td><td>' + set.gewicht + ' kg</td><td>' + set.wdh + '</td><td>' + trainEsc(set.datum) + '</td>';
+          tr.innerHTML = '<td>' + (setIdxInSession + 1) + '</td><td>' + set.gewicht + ' kg</td><td>' + set.wdh + '</td><td class="' + trendClass + '">' + cmp.label + '</td><td>' + trainEsc(set.datum) + '</td>';
           tr.appendChild(tdDel);
           tbody.appendChild(tr);
         });
         table.appendChild(tbody);
         exLeft.appendChild(table);
+
+        if (sessions.length > 1) {
+          var histDiv = document.createElement('div');
+          histDiv.className = 'train-history';
+          var histLines = ['<div class="train-history-title">Frühere Einheiten</div>'];
+          for (var hi = sessions.length - 2; hi >= 0; hi--) {
+            var s = sessions[hi];
+            var vol = s.sets.reduce(function(sum, x) { return sum + trainVolume(x); }, 0);
+            var b = trainBestSet(s.sets);
+            histLines.push('<div class="train-history-line">' + trainEsc(s.datum) + ': ' + s.sets.length + ' Sätze, Volumen ' + vol.toFixed(1).replace(/\.0$/, '') + ' kg, bester Satz ' + b.gewicht + ' kg × ' + b.wdh + '</div>');
+          }
+          histDiv.innerHTML = histLines.join('');
+          exLeft.appendChild(histDiv);
+        }
       } else {
         var hint = document.createElement('div');
         hint.className = 'train-empty-hint';
