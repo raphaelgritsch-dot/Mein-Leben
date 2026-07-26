@@ -1,0 +1,2984 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Raphi — Roter Faden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --surface-0:      #f9f9f7;
+    --surface-1:      #fcfcfb;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --border:         rgba(11,11,11,0.10);
+    --grid:           #e1e0d9;
+    --series-blue:    #2a78d6;
+    --series-green:   #008300;
+    --series-magenta: #e87ba4;
+    --series-yellow:  #eda100;
+    --series-aqua:    #1baf7a;
+    --series-orange:  #eb6834;
+    --series-violet:  #4a3aa7;
+    --series-red:     #e34948;
+    --status-good:     #0ca30c;
+    --status-warning:  #fab219;
+    --status-serious:  #ec835a;
+    --status-critical: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --surface-0:      #211e18;
+      --surface-1:      #322d24;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2f0;
+      --text-muted:     #8a8ac0;
+      --border:         rgba(255,255,255,0.16);
+      --grid:           #33336b;
+      --series-blue:    #3987e5;
+      --series-green:   #4dff4d;
+      --series-magenta: #d55181;
+      --series-yellow:  #ffe15a;
+      --series-aqua:    #199e70;
+      --series-orange:  #ff9b3d;
+      --series-violet:  #9085e9;
+      --series-red:     #ff4d6d;
+      --status-good:     #4dff4d;
+      --status-warning:  #ffe15a;
+      --status-serious:  #ff9b3d;
+      --status-critical: #ff4d6d;
+    }
+  }
+  /* Retro-Theme fest erzwungen (unabhängig vom OS-Farbschema), da die ganze App auf Pixel/N64-Look umgestellt ist */
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-0:      #211e18;
+    --surface-1:      #322d24;
+    --text-primary:   #f2ede1;
+    --text-secondary: #cfc6b4;
+    --text-muted:     #948a76;
+    --border:         rgba(255,255,255,0.14);
+    --grid:           #4a4436;
+    --series-blue:    #7f8fa6;
+    --series-green:   #4dff4d;
+    --series-magenta: #d55181;
+    --series-yellow:  #ffe15a;
+    --series-aqua:    #199e70;
+    --series-orange:  #ff9b3d;
+    --series-violet:  #9085e9;
+    --series-red:     #ff4d6d;
+    --status-good:     #4dff4d;
+    --status-warning:  #ffe15a;
+    --status-serious:  #ff9b3d;
+    --status-critical: #ff4d6d;
+  }
+
+  * { box-sizing: border-box; }
+  html { overflow-x: hidden; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background-color: #3a2f1f;
+    color: var(--text-primary);
+    line-height: 1.5;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 1040px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ---- Sitewide interaktiver Dungeon-Hintergrund ---- */
+  #dungeon-bg {
+    position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+    background-color: #3a2f1f;
+    background-image:
+      linear-gradient(rgba(30,22,12,0.25), rgba(30,22,12,0.25)),
+      url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAHtJREFUOI1jVFJS+s8ABWqSEgy3nr9gQAZqkhJw9q3nLzDUMCopKf1HVkQK0FeUZmAiVzMMMFGkm4GBgQndzyQbQKkXKApEBgYKw0BfUZoyAy7ef0pZGFDsAgaGgQ5Eig2gShiwhFoZwzkX7z+Fm3zx/lMGfUVpFMXYxABX8iFpcNCrDgAAAABJRU5ErkJggg==");
+    background-size: auto, 48px 48px;
+    image-rendering: pixelated;
+  }
+  #dungeon-bg .dg-sprite {
+    position: fixed; pointer-events: auto; cursor: pointer; image-rendering: pixelated;
+    filter: drop-shadow(2px 2px 0 #000); animation: bobble 2.4s ease-in-out infinite;
+  }
+  #dungeon-bg .dg-sprite:hover { transform: scale(1.2); }
+  #dungeon-bg .dg-sprite.collected { opacity: 0; transform: scale(0) rotate(25deg); pointer-events: none; }
+  #dungeon-bg .dg-torch {
+    position: fixed; width: 14px; pointer-events: none; image-rendering: pixelated;
+    filter: drop-shadow(0 0 6px rgba(255,150,40,0.6));
+  }
+
+  /* Hero with gradient */
+  header.hero {
+    margin: 0 -24px 0; padding: 40px 24px 20px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--series-blue) 18%, var(--surface-0)) 0%, var(--surface-0) 65%);
+    border-bottom: 3px solid var(--border);
+  }
+  header.hero .eyebrow {
+    font-family: "Press Start 2P", monospace;
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--series-yellow); margin-bottom: 14px; text-shadow: 2px 2px 0 #000;
+  }
+  header.hero h1 {
+    font-family: "Press Start 2P", monospace;
+    font-size: 26px; margin: 0 0 16px; letter-spacing: 0; text-shadow: 3px 3px 0 var(--series-violet);
+  }
+  header.hero p { font-size: 14px; color: var(--text-secondary); max-width: 640px; margin: 0; }
+  .updated { font-size: 11px; color: var(--text-muted); margin-top: 14px; }
+
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 4px; margin: 0 -24px 20px; padding: 14px 24px;
+    border-bottom: 3px solid var(--border); background: var(--surface-1); flex-wrap: wrap;
+  }
+  .tab-btn {
+    appearance: none; cursor: pointer;
+    font-family: "Press Start 2P", monospace; font-size: 10px; color: var(--text-muted);
+    background: var(--surface-0); border: 2px solid var(--border);
+    box-shadow: 3px 3px 0 #000; padding: 10px 12px; margin-right: 6px;
+  }
+  .tab-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #000; }
+  .tab-btn.active { color: #322d24; background: var(--series-yellow); border-color: #fff; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  section { margin-bottom: 48px; }
+  section > h2 {
+    font-family: "Press Start 2P", monospace;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.02em;
+    color: var(--series-yellow); margin: 0 0 16px; text-shadow: 2px 2px 0 #000;
+    border-bottom: 3px solid var(--grid); padding-bottom: 10px;
+  }
+
+  /* Vision tiles */
+  .vision-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .vision-tile {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px;
+  }
+  .vision-tile .n { font-size: 12px; color: var(--series-blue); font-weight: 700; margin-bottom: 6px; }
+  .vision-tile p { margin: 0; font-size: 14.5px; color: var(--text-primary); }
+
+  /* Cards grid for projects */
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(11,11,11,0.08); }
+  .card h3 { font-size: 16px; margin: 0 0 8px; }
+  .card .ziel { font-size: 13.5px; color: var(--text-secondary); margin: 0 0 12px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .badge.good { background: color-mix(in srgb, var(--status-good) 15%, transparent); color: var(--status-good); }
+  .badge.warning { background: color-mix(in srgb, var(--status-warning) 20%, transparent); color: #8a6100; }
+  .badge.critical { background: color-mix(in srgb, var(--status-critical) 15%, transparent); color: var(--status-critical); }
+  @media (prefers-color-scheme: dark) {
+    .badge.warning { color: var(--status-warning); }
+  }
+  .badge::before { content: "●"; font-size: 9px; }
+  .next-step { font-size: 13px; color: var(--text-muted); border-top: 1px solid var(--grid); padding-top: 10px; margin-top: 4px; }
+  .next-step b { color: var(--text-secondary); }
+
+  /* Dropdown / details per project card */
+  .card details { margin-top: 10px; }
+  .card summary {
+    cursor: pointer; font-size: 12.5px; font-weight: 700; color: var(--series-blue);
+    list-style: none; display: flex; align-items: center; gap: 6px; user-select: none;
+  }
+  .card summary::-webkit-details-marker { display: none; }
+  .card summary::before { content: "▸"; font-size: 10px; transition: transform 0.15s ease; }
+  .card details[open] summary::before { transform: rotate(90deg); }
+  .card details ul { margin: 10px 0 0; padding-left: 18px; font-size: 12.5px; color: var(--text-secondary); }
+  .card details li { margin-bottom: 5px; }
+
+  /* Bereiche list */
+  .bereiche-list { display: flex; flex-direction: column; gap: 8px; }
+  .bereich-row {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px;
+  }
+  .bereich-row .label { font-size: 14.5px; font-weight: 600; }
+  .bereich-row .desc { font-size: 13px; color: var(--text-muted); }
+
+  /* Progress bars */
+  .progress-item { margin-bottom: 20px; }
+  .progress-item .row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+  .progress-item .row .amount { color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+  .progress-track {
+    height: 10px; border-radius: 6px; background: var(--grid); overflow: hidden;
+  }
+  .progress-fill { height: 100%; border-radius: 6px; background: var(--series-blue); }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 14px; margin-top: 20px; }
+  .stat-tile {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px;
+  }
+  .stat-tile .label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .stat-tile .value { font-size: 24px; font-weight: 700; }
+  .stat-tile .sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 4px; }
+  .stat-tile .value.good { color: var(--status-good); }
+  .stat-tile .value.serious { color: var(--status-serious); }
+
+  /* Two-column layout for charts */
+  .chart-row { display: grid; grid-template-columns: 1fr 1.6fr; gap: 20px; align-items: stretch; }
+  @media (max-width: 720px) { .chart-row { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px;
+    padding: 22px; display: flex; flex-direction: column;
+  }
+  .chart-card h3 { font-size: 14px; margin: 0 0 4px; }
+  .chart-card .chart-sub { font-size: 12.5px; color: var(--text-muted); margin: 0 0 12px; }
+
+  /* Ring chart */
+  .ring-wrap { display: flex; align-items: center; justify-content: center; flex: 1; }
+  .ring-center-value { font-size: 26px; font-weight: 800; fill: var(--text-primary); }
+  .ring-center-label { font-size: 10.5px; fill: var(--text-muted); letter-spacing: 0.04em; }
+  .ring-legend { display: flex; justify-content: center; gap: 18px; margin-top: 10px; font-size: 12.5px; color: var(--text-secondary); }
+  .ring-legend .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; }
+
+  .line-labels text { font-size: 10.5px; fill: var(--text-muted); }
+  .line-value-label { font-size: 11px; font-weight: 700; fill: var(--text-primary); }
+  .ref-label { font-size: 10.5px; fill: var(--text-muted); }
+
+  .vision-note {
+    background: var(--surface-1); border: 1px dashed var(--border);
+    border-radius: 10px; padding: 20px; font-size: 14.5px; color: var(--text-secondary);
+  }
+  .vision-note b { color: var(--text-primary); }
+
+  /* Weltnews */
+  .news-refresh-note {
+    background: color-mix(in srgb, var(--series-yellow) 12%, var(--surface-1));
+    border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px;
+    font-size: 13px; color: var(--text-secondary); margin-bottom: 22px;
+  }
+  .news-list { display: flex; flex-direction: column; gap: 12px; }
+  .news-item {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .news-item .tag {
+    display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; padding: 2px 8px; border-radius: 5px; margin-bottom: 8px;
+  }
+  .tag.geopolitik { background: color-mix(in srgb, var(--series-violet) 16%, transparent); color: var(--series-violet); }
+  .tag.ki { background: color-mix(in srgb, var(--series-blue) 16%, transparent); color: var(--series-blue); }
+  .news-item h4 { margin: 0 0 6px; font-size: 15px; }
+  .news-item p { margin: 0; font-size: 13.5px; color: var(--text-secondary); }
+  .news-sources { font-size: 11.5px; color: var(--text-muted); margin-top: 24px; }
+  .news-sources a { color: var(--text-muted); }
+  .news-item .outlet { font-size: 12px; color: var(--text-muted); margin-bottom: 2px; }
+  .news-item .outlet a { color: var(--series-blue); text-decoration: none; font-weight: 600; }
+  .news-item details { margin-top: 12px; border-top: 1px solid var(--grid); padding-top: 10px; }
+  .news-item summary {
+    cursor: pointer; font-size: 12.5px; font-weight: 700; color: var(--series-blue);
+    list-style: none; display: flex; align-items: center; gap: 6px; user-select: none;
+  }
+  .news-item summary::-webkit-details-marker { display: none; }
+  .news-item summary::before { content: "▸"; font-size: 10px; transition: transform 0.15s ease; }
+  .news-item details[open] summary::before { transform: rotate(90deg); }
+  .article-body { margin-top: 14px; font-size: 13.5px; color: var(--text-secondary); max-height: 480px; overflow-y: auto; padding-right: 6px; }
+  .article-body p { margin: 0 0 12px; }
+  .article-body h5 { font-size: 13px; color: var(--text-primary); margin: 16px 0 6px; }
+  .article-body ul { padding-left: 18px; margin: 0 0 12px; }
+  .article-body a { color: var(--series-blue); }
+  .article-caption { font-size: 11.5px; color: var(--text-muted); font-style: italic; margin-bottom: 10px; }
+
+  /* Portfolio tab */
+  .rank-bar-row { display: grid; grid-template-columns: 140px 1fr 62px; align-items: center; gap: 10px; margin-bottom: 9px; }
+  .rank-bar-row .name { font-size: 12.5px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank-bar-track { height: 12px; border-radius: 4px; background: var(--grid); overflow: hidden; }
+  .rank-bar-fill { height: 100%; border-radius: 4px; }
+  .rank-bar-row .val { font-size: 12px; color: var(--text-muted); text-align: right; font-variant-numeric: tabular-nums; }
+
+  .donut-row { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .donut { width: 150px; height: 150px; border-radius: 50%; flex-shrink: 0; position: relative; }
+  .donut::after {
+    content: ""; position: absolute; inset: 22px; border-radius: 50%; background: var(--surface-1);
+  }
+  .donut-legend { display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-secondary); }
+  .donut-legend .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; }
+  .donut-legend .pct { font-weight: 700; color: var(--text-primary); margin-left: 6px; }
+
+  .table-wrap { overflow-x: auto; }
+  table.pos-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.pos-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); padding: 8px 10px; border-bottom: 1px solid var(--grid); }
+  table.pos-table td { padding: 9px 10px; border-bottom: 1px solid var(--grid); color: var(--text-secondary); }
+  table.pos-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.pos-table tr:last-child td { border-bottom: none; }
+  .delta-pos { color: var(--status-good); font-weight: 600; }
+  .delta-neg { color: var(--status-critical); font-weight: 600; }
+
+  .rec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .rec-card {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 18px;
+  }
+  .rec-card .rec-tag {
+    display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 2px 8px; border-radius: 5px; margin-bottom: 8px;
+    background: color-mix(in srgb, var(--series-green) 15%, transparent); color: var(--series-green);
+  }
+  .rec-card .rec-tag.spekulativ { background: color-mix(in srgb, var(--status-warning) 20%, transparent); color: #8a6100; }
+  @media (prefers-color-scheme: dark) { .rec-card .rec-tag.spekulativ { color: var(--status-warning); } }
+  .rec-card h3 { font-size: 15px; margin: 0 0 6px; }
+  .rec-card p { font-size: 13px; color: var(--text-secondary); margin: 0; }
+  .rec-card.with-cover { display: flex; gap: 14px; align-items: flex-start; }
+  .rec-card .cover { width: 64px; height: auto; border-radius: 4px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(11,11,11,0.15); }
+  .rec-card .cover-body { flex: 1; min-width: 0; }
+
+  /* Persönlichkeitsentwicklung tab */
+  .value-card {
+    background: var(--surface-1); border: 1px dashed var(--border); border-radius: 10px;
+    padding: 16px; text-align: center; color: var(--text-muted); font-size: 13px;
+  }
+  .value-card.filled { border-style: solid; color: var(--text-primary); }
+  .reflect-list { display: flex; flex-direction: column; gap: 10px; }
+  .reflect-item {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 18px; font-size: 13.5px; color: var(--text-secondary); display: flex; gap: 12px; align-items: flex-start;
+  }
+  .reflect-item .q-num { color: var(--series-violet); font-weight: 800; font-size: 13px; flex-shrink: 0; }
+  .habit-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .habit-table th { font-size: 11px; color: var(--text-muted); text-transform: uppercase; padding: 6px 4px; text-align: center; }
+  .habit-table th:first-child { text-align: left; }
+  .habit-table td { padding: 8px 4px; text-align: center; border-top: 1px solid var(--grid); }
+  .habit-table td:first-child { text-align: left; color: var(--text-secondary); font-weight: 600; }
+  .habit-check {
+    width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--grid); display: inline-block; position: relative;
+  }
+  .habit-checkbox { display: inline-flex; cursor: pointer; }
+  .habit-checkbox input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .habit-checkbox input:checked ~ .habit-check { background: var(--status-good); border-color: var(--status-good); }
+  .habit-checkbox input:checked ~ .habit-check::after {
+    content: ""; position: absolute; left: 4px; top: 4px; width: 8px; height: 8px; background: #211e18;
+  }
+  .cta-box {
+    background: color-mix(in srgb, var(--series-violet) 10%, var(--surface-1));
+    border: 1px solid var(--border); border-radius: 12px; padding: 20px; font-size: 13.5px; color: var(--text-secondary);
+  }
+  .cta-box b { color: var(--text-primary); }
+  .empty-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .empty-list li {
+    border: 1px dashed var(--border); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--text-muted);
+  }
+
+  /* Portfolio layout with news sidebar */
+  .portfolio-layout { display: grid; grid-template-columns: 1fr 300px; gap: 28px; align-items: start; }
+  @media (max-width: 900px) { .portfolio-layout { grid-template-columns: 1fr; } }
+
+  /* Mobile: dekorative Pixel-Art-Figuren im Hintergrund ausblenden, damit sie nicht über Inhalte laufen */
+  @media (max-width: 860px) {
+    .dungeon-char, .dungeon-obj, .dungeon-cloud { display: none; }
+    .npc-walk, .dg-char { display: none; }
+  }
+  @media (max-width: 480px) {
+    .vision-grid, .card-grid, .calc-grid, .calc-results { grid-template-columns: 1fr; }
+  }
+  .portfolio-sidebar {
+    position: sticky; top: 20px;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 18px;
+  }
+  .portfolio-sidebar h3 { font-size: 13px; margin: 0 0 4px; }
+  .portfolio-sidebar .chart-sub { margin: 0 0 14px; }
+  .stock-news-item { border-top: 1px solid var(--grid); padding: 10px 0; }
+  .stock-news-item:first-of-type { border-top: none; padding-top: 0; }
+  .stock-news-item summary {
+    cursor: pointer; font-size: 13px; font-weight: 700; color: var(--text-primary);
+    list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 6px; user-select: none;
+  }
+  .stock-news-item summary::-webkit-details-marker { display: none; }
+  .stock-news-item summary .arrow { font-size: 10px; color: var(--series-blue); transition: transform 0.15s ease; }
+  .stock-news-item details[open] summary .arrow,
+  .stock-news-item[open] summary .arrow { transform: rotate(90deg); }
+  .stock-news-item .snippet { font-size: 12.5px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5; }
+  .stock-news-item .snippet a { color: var(--series-blue); font-size: 11.5px; display: inline-block; margin-top: 6px; }
+  .action-tag {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700;
+    padding: 3px 9px; border-radius: 999px; margin-top: 9px;
+  }
+  .action-tag::before { content: "●"; font-size: 8px; }
+  .action-tag.nachkaufen { background: color-mix(in srgb, var(--status-good) 16%, transparent); color: var(--status-good); }
+  .action-tag.halten { background: color-mix(in srgb, var(--series-blue) 16%, transparent); color: var(--series-blue); }
+  .action-tag.beobachten { background: color-mix(in srgb, var(--status-warning) 22%, transparent); color: #8a6100; }
+  .action-tag.reduzieren { background: color-mix(in srgb, var(--status-critical) 16%, transparent); color: var(--status-critical); }
+  @media (prefers-color-scheme: dark) { .action-tag.beobachten { color: var(--status-warning); } }
+  .action-time { display: block; margin-top: 6px; font-size: 10.5px; color: var(--text-muted); font-style: italic; }
+
+  footer { font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 60px; }
+
+  /* ============ XP-LEVEL TAB — PIXEL / N64 STYLE ============ */
+  .pixel-font { font-family: "Press Start 2P", "Courier New", monospace; }
+  #xp-panel {
+    background: #211e18;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 16px 16px;
+    border: 4px solid #5a5448;
+    border-radius: 0;
+    padding: 24px;
+    margin: 0 -24px;
+    image-rendering: pixelated;
+    position: relative;
+    overflow: hidden;
+  }
+  #xp-panel * { image-rendering: pixelated; }
+
+
+  /* Klickbare Collectible-Sprites, im Panel verteilt */
+  .collectible {
+    position: absolute; cursor: pointer; z-index: 5;
+    filter: drop-shadow(2px 2px 0 #000);
+    transition: transform 0.15s ease;
+    animation: bobble 2.4s ease-in-out infinite;
+  }
+  .collectible:hover { transform: scale(1.25); }
+  .collectible.collected { opacity: 0; transform: scale(0) rotate(25deg); pointer-events: none; }
+  @keyframes bobble { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  .collect-popup {
+    position: absolute; font-family: "Press Start 2P", monospace; font-size: 9px; color: #ffe15a;
+    text-shadow: 2px 2px 0 #000; pointer-events: none; z-index: 20;
+    animation: floatUp 0.9s ease forwards;
+  }
+  @keyframes floatUp { from { transform: translateY(0); opacity:1; } to { transform: translateY(-30px); opacity:0; } }
+
+  .char-avatar { image-rendering: pixelated; width: 40px; height: auto; vertical-align: middle; margin-right: 10px; }
+  #xp-panel h2 {
+    color: #ffe15a; text-shadow: 2px 2px 0 #6b3fa0;
+    border-bottom: none; text-transform: uppercase; letter-spacing: 2px;
+  }
+  .pixel-box {
+    background: #322d24;
+    border: 3px solid #ffe15a;
+    box-shadow: 4px 4px 0 #000, inset 0 0 0 2px #211e18;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .xp-header-box {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+  .char-level-badge {
+    background: #ff4d6d; color: #fff; padding: 10px 16px; font-size: 13px;
+    border: 3px solid #fff; box-shadow: 3px 3px 0 #000;
+  }
+  .char-title { color: #7fffd4; font-size: 11px; letter-spacing: 1px; }
+  .char-sub { color: #a0a0d0; font-size: 9px; margin-top: 8px; line-height: 1.8; }
+
+  .skill-card {
+    background: #322d24; border: 3px solid #5a5448; box-shadow: 4px 4px 0 #000;
+    padding: 14px 16px; margin-bottom: 14px;
+  }
+  .skill-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .skill-name { color: #fff; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+  .skill-lv { color: #ffe15a; font-size: 10px; background: #000; padding: 4px 8px; border: 2px solid #ffe15a; }
+
+  .xp-bar-outer {
+    background: #000; border: 2px solid #fff; height: 20px; padding: 2px; display: flex; gap: 2px;
+  }
+  .xp-bar-big { height: 34px; border-width: 3px; box-shadow: 3px 3px 0 #000; gap: 3px; padding: 3px; }
+  .xp-bar-big .xp-seg { box-shadow: none; }
+
+  .skill-btn-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;
+  }
+  .skill-pixel-btn {
+    font-family: "Press Start 2P", "Courier New", monospace;
+    font-size: 9px; color: #322d24; border: 3px solid #fff;
+    box-shadow: 4px 4px 0 #000; padding: 16px 10px; cursor: pointer; text-transform: uppercase;
+    text-align: center; line-height: 1.6;
+  }
+  .skill-pixel-btn:hover { filter: brightness(1.15); }
+  .skill-pixel-btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 #000; }
+  .skill-pixel-btn .amt { display: block; font-size: 8px; margin-top: 6px; opacity: 0.75; }
+  .breakdown-row { display: flex; justify-content: space-between; font-size: 9px; padding: 5px 0; border-bottom: 1px solid #2a2a55; }
+  .breakdown-row .swatch { display: inline-block; width: 9px; height: 9px; margin-right: 8px; vertical-align: middle; }
+  .xp-seg { flex: 1; background: #2a2a55; }
+  .xp-seg.filled { background: #7fffd4; box-shadow: 0 0 4px #7fffd4; }
+  .xp-seg.filled.skill-fitness { background: #ff4d6d; box-shadow: 0 0 4px #ff4d6d; }
+  .xp-seg.filled.skill-arbeit { background: #ffe15a; box-shadow: 0 0 4px #ffe15a; }
+  .xp-seg.filled.skill-nebengewerbe { background: #ff9b3d; box-shadow: 0 0 4px #ff9b3d; }
+  .xp-seg.filled.skill-finanzen { background: #4dff4d; box-shadow: 0 0 4px #4dff4d; }
+  .xp-seg.filled.skill-persoenlichkeit { background: #c77dff; box-shadow: 0 0 4px #c77dff; }
+  .xp-seg.filled.skill-sprachen { background: #4dd2ff; box-shadow: 0 0 4px #4dd2ff; }
+  .xp-seg.filled.skill-hobby { background: #ff6ec7; box-shadow: 0 0 4px #ff6ec7; }
+
+  .xp-numbers { display: flex; justify-content: space-between; font-size: 8px; color: #a0a0d0; margin-top: 6px; }
+
+  .pixel-btn {
+    font-family: "Press Start 2P", "Courier New", monospace;
+    font-size: 8px; color: #fff; background: #5a5448; border: 2px solid #fff;
+    box-shadow: 3px 3px 0 #000; padding: 8px 10px; cursor: pointer;
+    text-transform: uppercase; margin: 10px 6px 0 0; transition: none;
+  }
+  .pixel-btn:hover { background: #5f5fb0; }
+  .pixel-btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 #000; }
+  .pixel-btn.minus { background: #6b1a1a; }
+  .pixel-btn.minus:hover { background: #8a2222; }
+  .pixel-btn.reset-all { background: #6b1a1a; font-size: 9px; padding: 10px 14px; }
+
+  .levelup-toast {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+    background: #ffe15a; color: #322d24; font-family: "Press Start 2P", monospace; font-size: 11px;
+    padding: 14px 20px; border: 3px solid #000; box-shadow: 4px 4px 0 #000;
+    z-index: 999; display: none;
+  }
+  .levelup-toast.show { display: block; animation: popIn 0.25s ease; }
+  @keyframes popIn { from { transform: translateX(-50%) scale(0.6); opacity:0; } to { transform: translateX(-50%) scale(1); opacity:1; } }
+
+  /* ============ GLOBALER PIXEL/RETRO-REDESIGN — gilt für die ganze Seite ============ */
+  /* Harte Kanten + Blockschatten auf allen Karten/Kacheln, statt runder Ecken + weichem Schatten */
+  .vision-tile, .card, .bereich-row, .stat-tile, .chart-card, .vision-note,
+  .news-refresh-note, .news-item, .rec-card, .value-card, .reflect-item,
+  .cta-box, .empty-list li, .portfolio-sidebar, .stock-news-item,
+  .progress-track, .rank-bar-track, .rec-card .cover {
+    border-radius: 0 !important;
+  }
+  .card, .stat-tile, .chart-card, .news-item, .rec-card, .bereich-row,
+  .portfolio-sidebar, .cta-box, .vision-tile, .value-card, .reflect-item {
+    border-width: 2px !important;
+    box-shadow: 4px 4px 0 #000 !important;
+  }
+  .card:hover { box-shadow: 6px 6px 0 #000 !important; transform: translate(-2px,-2px) !important; }
+
+  /* Pixel-Font für Chrome-Elemente (kurze Labels), NICHT für Fließtext/Tabellen/lange Titel — Lesbarkeit bleibt erhalten */
+  .badge, .rec-card .rec-tag, .news-item .tag, .action-tag {
+    border-radius: 0 !important;
+    font-family: "Press Start 2P", monospace !important; font-size: 7px !important;
+    letter-spacing: 0 !important; padding: 5px 7px !important; line-height: 1.6;
+  }
+  .stat-tile .value {
+    font-family: "Press Start 2P", monospace; font-size: 15px !important; letter-spacing: 0;
+  }
+  .char-level-badge, .skill-lv { border-radius: 0 !important; }
+
+  /* Body-Rahmen: die ganze .wrap bekommt einen dicken Pixel-Rand wie ein Spielbildschirm */
+  .wrap { border-left: 3px solid var(--border); border-right: 3px solid var(--border); }
+
+  /* Buttons/Links generell etwas kantiger */
+  .news-sources, .article-body a, .card summary, .news-item summary { text-shadow: none; }
+
+  /* Nadel & Zwirn Tab */
+  .countdown-box {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--series-orange) 20%, var(--surface-1)) 0%, var(--surface-1) 70%);
+    border: 2px solid var(--series-orange); box-shadow: 4px 4px 0 #000;
+    padding: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+  .countdown-box .cd-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .countdown-box .cd-number {
+    font-family: "Press Start 2P", monospace; font-size: 28px; color: var(--series-orange); text-shadow: 2px 2px 0 #000;
+  }
+  .warn-box {
+    background: color-mix(in srgb, var(--status-warning) 14%, var(--surface-1));
+    border: 2px solid var(--status-warning); box-shadow: 4px 4px 0 #000;
+    padding: 14px 18px; font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;
+  }
+  .warn-box b { color: var(--status-warning); }
+  .gap-box {
+    background: color-mix(in srgb, var(--status-critical) 12%, var(--surface-1));
+    border: 2px solid var(--status-critical); box-shadow: 4px 4px 0 #000;
+    padding: 14px 18px; font-size: 13px; color: var(--text-secondary); margin-top: 14px;
+  }
+  .gap-box b { color: var(--status-critical); }
+  .calc-card { padding: 20px; }
+  .calc-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 18px;
+    margin-bottom: 18px;
+  }
+  .calc-grid label {
+    display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--text-secondary);
+  }
+  .calc-grid select, .calc-grid input {
+    font-family: inherit; font-size: 13px; padding: 8px 10px; background: var(--surface-0);
+    color: var(--text-primary); border: 2px solid var(--border); border-radius: 0;
+  }
+  .calc-hint { font-size: 10px; color: var(--text-muted); font-weight: normal; }
+  .calc-results {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;
+  }
+  .calc-result-tile {
+    background: var(--surface-0); border: 2px solid var(--border); box-shadow: 3px 3px 0 #000;
+    padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .calc-result-tile .lbl { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .calc-result-tile .val { font-size: 18px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+  .calc-result-tile.highlight { border-color: var(--series-yellow); }
+  .calc-result-tile.highlight .val { color: var(--series-yellow); }
+  .calc-result-tile.negative .val { color: var(--status-critical); }
+  .quick-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .quick-list li {
+    background: var(--surface-1); border: 2px solid var(--border); box-shadow: 3px 3px 0 #000;
+    padding: 10px 14px; font-size: 13px; color: var(--text-secondary);
+  }
+  .quick-list li b { color: var(--text-primary); }
+
+  /* Interaktive Pixel-Checkboxen */
+  .quick-list li.checkable { padding: 0; }
+  .pixel-checkbox {
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
+    padding: 10px 14px; user-select: none;
+  }
+  .pixel-checkbox input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .pixel-checkbox .check-visual {
+    flex-shrink: 0; width: 18px; height: 18px; background: var(--surface-0);
+    border: 2px solid var(--text-muted); position: relative;
+  }
+  .pixel-checkbox input:checked ~ .check-visual {
+    background: var(--status-good); border-color: var(--status-good);
+  }
+  .pixel-checkbox input:checked ~ .check-visual::after {
+    content: ""; position: absolute; left: 3px; top: 3px; width: 8px; height: 8px; background: #211e18;
+  }
+  .pixel-checkbox .check-text { transition: none; }
+  .pixel-checkbox input:checked ~ .check-text {
+    text-decoration: line-through; color: var(--text-muted);
+  }
+
+  /* Sitweite Skyline mit laufenden Figuren, sichtbar auf jedem Tab */
+  #site-skyline {
+    position: relative; height: 100px; margin: 0 -24px 0; overflow: hidden;
+    border-bottom: 3px solid var(--border);
+    background: linear-gradient(#3a2f1f 0%, #4a3c26 60%, #5a4a30 100%);
+    image-rendering: pixelated;
+  }
+  #site-skyline img { position: absolute; image-rendering: pixelated; }
+
+  /* ===== Pixel-Art Dungeon-Szene (Tiny Swords / Tiny RPG) ===== */
+  .spr { image-rendering: pixelated; background-repeat: no-repeat; display: block; }
+  .spr-soldier-walk { width:58px; height:58px; background-image:url("07 Anhänge/PixelArt/sprites/soldier_walk.png"); background-size:464px 58px; animation:strip464 0.8s steps(8) infinite; }
+  .spr-orc-walk     { width:58px; height:58px; background-image:url("07 Anhänge/PixelArt/sprites/orc_walk.png"); background-size:464px 58px; animation:strip464 0.85s steps(8) infinite; }
+  .spr-soldier-idle { width:58px; height:58px; background-image:url("07 Anhänge/PixelArt/sprites/soldier_idle.png"); background-size:348px 58px; animation:strip348 1s steps(6) infinite; }
+  .spr-orc-idle     { width:58px; height:58px; background-image:url("07 Anhänge/PixelArt/sprites/orc_idle.png"); background-size:348px 58px; animation:strip348 1.1s steps(6) infinite; }
+  .spr-monk-run     { width:74px; height:74px; background-image:url("07 Anhänge/PixelArt/sprites/monk_run.png"); background-size:296px 74px; animation:strip296 0.55s steps(4) infinite; }
+  .spr-monk-idle    { width:74px; height:74px; background-image:url("07 Anhänge/PixelArt/sprites/monk_idle.png"); background-size:444px 74px; animation:strip444 1s steps(6) infinite; }
+  .spr-warrior-blue { width:74px; height:74px; background-image:url("07 Anhänge/PixelArt/sprites/warrior_blue_idle.png"); background-size:444px 74px; animation:strip444 0.9s steps(6) infinite; }
+  .spr-warrior-red  { width:74px; height:74px; background-image:url("07 Anhänge/PixelArt/sprites/warrior_red_idle.png"); background-size:444px 74px; animation:strip444 0.95s steps(6) infinite; }
+  .spr-pawn-blue    { width:74px; height:74px; background-image:url("07 Anhänge/PixelArt/sprites/pawn_blue_idle.png"); background-size:444px 74px; animation:strip444 1s steps(6) infinite; }
+  .spr-pawn-purple  { width:74px; height:74px; background-image:url("07 Anhänge/PixelArt/sprites/pawn_purple_idle.png"); background-size:444px 74px; animation:strip444 1.05s steps(6) infinite; }
+  .spr-archer       { width:74px; height:74px; background-image:url("07 Anhänge/PixelArt/sprites/archer_blue_idle.png"); background-size:592px 74px; animation:strip592 1s steps(8) infinite; }
+  .spr-sheep        { width:46px; height:46px; background-image:url("07 Anhänge/PixelArt/sprites/sheep_idle.png"); background-size:368px 46px; animation:strip368 1.1s steps(8) infinite; }
+  @keyframes strip464 { to { background-position:-464px 0; } }
+  @keyframes strip348 { to { background-position:-348px 0; } }
+  @keyframes strip296 { to { background-position:-296px 0; } }
+  @keyframes strip444 { to { background-position:-444px 0; } }
+  @keyframes strip592 { to { background-position:-592px 0; } }
+  @keyframes strip368 { to { background-position:-368px 0; } }
+
+  /* Laufende Figuren im oberen Band */
+  .npc-walk { position:absolute; bottom:4px; z-index:6; animation-timing-function:linear; animation-iteration-count:infinite; cursor:pointer; }
+  .npc-walk.to-right { animation-name: npcRight; }
+  .npc-walk.to-left  { animation-name: npcLeft; }
+  .npc-walk .spr { transform: scale(1.7); transform-origin: bottom center; }
+  .npc-walk.to-left .spr { transform: scaleX(-1.7) scaleY(1.7); transform-origin: bottom center; }
+  @keyframes npcRight { from { left:-80px; } to { left:calc(100% + 20px); } }
+  @keyframes npcLeft  { from { left:calc(100% + 20px); } to { left:-80px; } }
+
+  /* Frame-animierte, anklickbare Charaktere im Fixed-Hintergrund */
+  .dg-char { position:fixed; z-index:0; image-rendering:pixelated; pointer-events:auto; cursor:pointer; transition:filter 0.15s ease; transform:scale(1.8); transform-origin:bottom center; }
+  .dg-char:hover { filter:brightness(1.25); }
+  .dg-char.collected { opacity:0; transform:scale(0) rotate(15deg); pointer-events:none; transition:all 0.3s ease; }
+
+  /* Statische Deko-Objekte (Gebäude, Bäume, Steine) im Fixed-Hintergrund */
+  .dungeon-obj { position:fixed; z-index:0; image-rendering:pixelated; pointer-events:none; }
+  .dungeon-obj.clickable { pointer-events:auto; cursor:pointer; transition:filter 0.15s ease; }
+  .dungeon-obj.clickable:hover { filter:brightness(1.15); }
+  .dungeon-obj.collected { opacity:0; transform:scale(0); pointer-events:none; transition:all 0.3s ease; }
+  /* ---- Trainings-Logbuch ---- */
+  .train-day-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+  .train-day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
+  .train-day-header h3 { margin: 0; color: var(--series-orange); }
+  .train-exercise { background: var(--surface-0); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+  .train-exercise-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
+  .train-exercise-header .name { font-weight: 700; font-size: 14.5px; color: var(--text-primary); }
+  .train-exercise-body { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+  .train-exercise-left { flex: 1 1 260px; min-width: 220px; }
+  .train-exercise-img { flex: 0 0 160px; width: 160px; height: auto; border-radius: 8px; background: #fff; }
+  @media (max-width: 480px) { .train-exercise-body { flex-direction: column; } .train-exercise-img { flex: 0 0 auto; width: 140px; margin: 0 auto; } }
+  .train-tag { font-size: 10.5px; padding: 2px 9px; border-radius: 20px; background: color-mix(in srgb, var(--series-orange) 18%, transparent); color: var(--series-orange); margin-left: 8px; }
+  .train-sets-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13px; }
+  .train-sets-table th { text-align: left; color: var(--text-muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em; padding: 4px 6px; }
+  .train-sets-table td { padding: 6px; border-top: 1px solid var(--grid); color: var(--text-secondary); }
+  .train-empty-hint { font-size: 12.5px; color: var(--text-muted); padding: 4px 6px 10px; }
+  .train-add-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .train-add-row input { padding: 7px 10px; background: var(--surface-1); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px; font-size: 13px; }
+  .train-add-row input.train-num { width: 90px; }
+  .train-exercise .train-add-row input { background: var(--surface-1); }
+  .train-small-btn {
+    padding: 7px 12px; font-size: 12px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface-1); color: var(--text-primary); cursor: pointer; font-family: inherit;
+  }
+  .train-small-btn.primary { background: var(--series-orange); color: #1a1206; border-color: var(--series-orange); font-weight: 700; }
+  .train-small-btn.danger { color: var(--status-critical); border-color: var(--status-critical); background: transparent; }
+  .train-add-exercise-row { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+  .train-add-exercise-row input {
+    flex: 1; min-width: 140px; padding: 10px 12px; background: var(--surface-1);
+    border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px;
+    font-size: 15px;
+  }
+  .train-add-exercise-row input.train-exercise-tag-input { flex: 0 1 180px; }
+  @media (max-width: 480px) {
+    .train-add-exercise-row { flex-direction: column; align-items: stretch; }
+    .train-add-exercise-row input { min-width: 0; width: 100%; font-size: 16px; }
+    .train-add-exercise-row button { width: 100%; }
+    .train-add-row input { font-size: 16px; padding: 10px 12px; }
+  }
+
+  .dungeon-char { position:fixed; z-index:0; image-rendering:pixelated; pointer-events:auto; cursor:pointer; transition:filter 0.15s ease; transform:scale(2); transform-origin:bottom center; }
+  .dungeon-char:hover { filter:brightness(1.3); }
+  .dungeon-cloud { position:fixed; z-index:0; image-rendering:pixelated; pointer-events:none; opacity:0.85; animation:dgDrift 60s linear infinite; }
+  @keyframes dgDrift { from { transform:translateX(-8vw); } to { transform:translateX(8vw); } }
+
+  .walker {
+    position: absolute; bottom: 0; height: 44px; z-index: 6;
+    animation-timing-function: linear; animation-iteration-count: infinite;
+  }
+  .walker.walk-right { animation-name: walkRight; }
+  .walker.walk-left { animation-name: walkLeft; transform: scaleX(-1); }
+  @keyframes walkRight {
+    0%   { left: -60px; }
+    48%  { left: calc(100% + 60px); }
+    49%  { left: calc(100% + 60px); transform: scaleX(-1); }
+    50%  { left: calc(100% + 60px); transform: scaleX(-1); }
+    98%  { left: -60px; transform: scaleX(-1); }
+    99%  { left: -60px; transform: scaleX(1); }
+    100% { left: -60px; transform: scaleX(1); }
+  }
+  @keyframes walkLeft {
+    0%   { left: calc(100% + 60px); }
+    48%  { left: -60px; }
+    49%  { left: -60px; transform: scaleX(1); }
+    50%  { left: -60px; transform: scaleX(1); }
+    98%  { left: calc(100% + 60px); transform: scaleX(1); }
+    99%  { left: calc(100% + 60px); transform: scaleX(-1); }
+    100% { left: calc(100% + 60px); transform: scaleX(-1); }
+  }
+  .walker img { display: block; height: 100%; image-rendering: pixelated; animation: walkerBob 0.4s ease-in-out infinite alternate; }
+  @keyframes walkerBob { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+
+</style>
+</head>
+<body>
+<div id="pw-gate-overlay" style="position:fixed; inset:0; z-index:99999; background:#0b0e14; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:14px; padding:20px; text-align:center; font-family:sans-serif;">
+  <div style="font-size:15px; color:#e8e8e8;">Zugangscode</div>
+  <input type="password" id="pw-gate-input" style="padding:12px 14px; font-size:17px; border-radius:8px; border:1px solid #444; background:#1a1e26; color:#fff; width:220px; text-align:center;" autocomplete="off" autocapitalize="off" autocorrect="off">
+  <button type="button" id="pw-gate-btn" style="padding:11px 20px; font-size:14px; border-radius:8px; border:none; background:#ff8c3a; color:#1a1206; font-weight:700; cursor:pointer;">Entsperren</button>
+  <div id="pw-gate-error" style="color:#ff6a6a; font-size:13px; min-height:16px;"></div>
+</div>
+<button type="button" onclick="dbgToggle()" style="position:fixed; bottom:10px; right:10px; z-index:9999; padding:8px 12px; background:#222; color:#0f0; border:1px solid #0f0; border-radius:6px; font-size:11px; font-family:monospace; opacity:0.85;">Debug</button>
+<div id="dbg-log-panel" style="display:none; position:fixed; bottom:50px; right:10px; left:10px; max-height:40vh; z-index:9999; background:#111; border:1px solid #0f0; border-radius:6px; padding:8px;">
+  <pre id="dbg-log-content" style="color:#0f0; font-size:10px; white-space:pre-wrap; word-break:break-word; max-height:calc(40vh - 16px); overflow-y:auto; margin:0; font-family:monospace;"></pre>
+</div>
+<div id="dungeon-bg">
+  <img class="dungeon-cloud" src="07 Anhänge/PixelArt/sprites/cloud.png" style="top:60px; left:12%; width:80px;">
+  <img class="dungeon-cloud" src="07 Anhänge/PixelArt/sprites/cloud.png" style="top:120px; right:14%; width:64px; animation-duration:80s;">
+
+  <img class="dungeon-obj" src="07 Anhänge/PixelArt/sprites/castle.png" style="top:96px; left:0.5%; width:120px;">
+  <div class="dg-char spr-warrior-blue" onclick="collectSprite(this)" title="Ritter Blau – Bonus-XP" style="top:250px; left:2%;"></div>
+  <img class="dungeon-obj" src="07 Anhänge/PixelArt/sprites/tree.png" style="top:300px; left:0.3%; width:78px;">
+  <div class="dg-char spr-pawn-blue" onclick="collectSprite(this)" title="Bauer Blau – Bonus-XP" style="top:400px; left:3%;"></div>
+  <div class="dg-char spr-sheep" onclick="collectSprite(this)" title="Schaf – Bonus-XP" style="top:490px; left:1.5%;"></div>
+  <img class="dungeon-obj" src="07 Anhänge/PixelArt/sprites/house1.png" style="top:545px; left:1%; width:70px;">
+  <div class="dg-char spr-monk-idle" onclick="collectSprite(this)" title="Mönch – Bonus-XP" style="bottom:130px; left:2.5%;"></div>
+  <img class="dungeon-obj" src="07 Anhänge/PixelArt/sprites/rock.png" style="bottom:80px; left:4.5%; width:44px;">
+
+  <img class="dungeon-obj" src="07 Anhänge/PixelArt/sprites/tower.png" style="top:100px; right:2%; width:74px;">
+  <div class="dg-char spr-archer" onclick="collectSprite(this)" title="Bogenschütze – Bonus-XP" style="top:250px; right:2%;"></div>
+  <img class="dungeon-obj" src="07 Anhänge/PixelArt/sprites/tree.png" style="top:320px; right:0.3%; width:78px;">
+  <div class="dg-char spr-warrior-red" onclick="collectSprite(this)" title="Ritter Rot – Bonus-XP" style="top:430px; right:3%;"></div>
+  <img class="dungeon-obj" src="07 Anhänge/PixelArt/sprites/goldmine.png" style="top:520px; right:1%; width:78px;">
+  <div class="dg-char spr-pawn-purple" onclick="collectSprite(this)" title="Bauer Lila – Bonus-XP" style="bottom:135px; right:2.5%;"></div>
+  <img class="dungeon-obj" src="07 Anhänge/PixelArt/sprites/bush.png" style="bottom:95px; right:4.5%; width:42px;">
+  <img class="dungeon-obj" src="07 Anhänge/PixelArt/sprites/house2.png" style="bottom:55px; right:1%; width:70px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ritter Lila" src="07 Anhänge/PixelArt/sprites/warrior_purple.png" style="top:150px; left:0.4%; width:50px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bogenschütze Gelb" src="07 Anhänge/PixelArt/sprites/archer_yellow.png" style="top:225px; left:0.4%; width:50px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bauer Rot" src="07 Anhänge/PixelArt/sprites/pawn_red.png" style="top:355px; left:0.4%; width:48px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Soldat" src="07 Anhänge/PixelArt/sprites/soldier.png" style="top:445px; left:0.6%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ritter Gelb" src="07 Anhänge/PixelArt/sprites/warrior_yellow.png" style="top:610px; left:0.4%; width:50px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ork" src="07 Anhänge/PixelArt/sprites/orc.png" style="top:700px; left:0.6%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bauer Gelb" src="07 Anhänge/PixelArt/sprites/pawn_yellow.png" style="bottom:235px; left:0.4%; width:48px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bogenschütze Lila" src="07 Anhänge/PixelArt/sprites/archer_purple.png" style="bottom:45px; left:0.5%; width:50px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bauer Rot" src="07 Anhänge/PixelArt/sprites/pawn_red.png" style="top:185px; left:5%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ritter Blau" src="07 Anhänge/PixelArt/sprites/warrior_blue.png" style="top:525px; left:5.2%; width:48px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bogenschütze Rot" src="07 Anhänge/PixelArt/sprites/archer_red.png" style="top:615px; left:5%; width:48px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Soldat" src="07 Anhänge/PixelArt/sprites/soldier.png" style="bottom:305px; left:5.2%; width:42px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ork" src="07 Anhänge/PixelArt/sprites/orc.png" style="bottom:175px; left:5%; width:42px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ritter Rot" src="07 Anhänge/PixelArt/sprites/warrior_red.png" style="top:175px; right:0.4%; width:50px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bauer Gelb" src="07 Anhänge/PixelArt/sprites/pawn_yellow.png" style="top:385px; right:0.4%; width:48px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bogenschütze Lila" src="07 Anhänge/PixelArt/sprites/archer_purple.png" style="top:605px; right:0.4%; width:50px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Soldat" src="07 Anhänge/PixelArt/sprites/soldier.png" style="top:695px; right:0.6%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ork" src="07 Anhänge/PixelArt/sprites/orc.png" style="bottom:255px; right:0.6%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ritter Lila" src="07 Anhänge/PixelArt/sprites/warrior_purple.png" style="bottom:45px; right:0.4%; width:50px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bogenschütze Gelb" src="07 Anhänge/PixelArt/sprites/archer_yellow.png" style="top:215px; right:5%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bauer Rot" src="07 Anhänge/PixelArt/sprites/pawn_red.png" style="top:355px; right:5.2%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ritter Gelb" src="07 Anhänge/PixelArt/sprites/warrior_yellow.png" style="top:645px; right:5%; width:48px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Soldat" src="07 Anhänge/PixelArt/sprites/soldier.png" style="bottom:335px; right:5.2%; width:42px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bauer Lila" src="07 Anhänge/PixelArt/sprites/pawn_purple.png" style="bottom:125px; right:5%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Fackel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_torch_red.png" style="top:120px; left:2.3%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Barrel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_barrel_blue.png" style="top:290px; left:2.3%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="TNT-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_tnt_purple.png" style="top:470px; left:2.3%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Fackel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_torch_yellow.png" style="top:660px; left:2.3%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Fackel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_torch_purple.png" style="bottom:200px; left:2.3%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="TNT-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_tnt_red.png" style="top:200px; left:6.5%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Barrel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_barrel_yellow.png" style="top:560px; left:6.5%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Fackel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_torch_blue.png" style="bottom:120px; left:6.5%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Fackel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_torch_blue.png" style="top:130px; right:2.3%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Barrel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_barrel_yellow.png" style="top:300px; right:2.3%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="TNT-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_tnt_red.png" style="top:480px; right:2.3%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Fackel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_torch_purple.png" style="top:670px; right:2.3%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Fackel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_torch_red.png" style="bottom:210px; right:2.3%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="TNT-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_tnt_purple.png" style="top:250px; right:6.5%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Barrel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_barrel_blue.png" style="top:600px; right:6.5%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Fackel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_torch_yellow.png" style="bottom:130px; right:6.5%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ritter Blau" src="07 Anhänge/PixelArt/sprites/warrior_blue.png" style="top:820px; left:0.4%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bogenschütze Gelb" src="07 Anhänge/PixelArt/sprites/archer_yellow.png" style="top:250px; left:3.5%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Fackel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_torch_purple.png" style="top:400px; left:3.5%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bauer Rot" src="07 Anhänge/PixelArt/sprites/pawn_red.png" style="top:640px; left:3.5%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ork" src="07 Anhänge/PixelArt/sprites/orc.png" style="top:180px; left:8.5%; width:40px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="TNT-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_tnt_red.png" style="top:430px; left:8.5%; width:42px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ritter Gelb" src="07 Anhänge/PixelArt/sprites/warrior_yellow.png" style="bottom:290px; left:3.5%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Soldat" src="07 Anhänge/PixelArt/sprites/soldier.png" style="bottom:60px; left:3.5%; width:42px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ritter Rot" src="07 Anhänge/PixelArt/sprites/warrior_red.png" style="top:830px; right:0.4%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bogenschütze Lila" src="07 Anhänge/PixelArt/sprites/archer_purple.png" style="top:260px; right:3.5%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Fackel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_torch_blue.png" style="top:410px; right:3.5%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Bauer Gelb" src="07 Anhänge/PixelArt/sprites/pawn_yellow.png" style="top:650px; right:3.5%; width:44px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ork" src="07 Anhänge/PixelArt/sprites/orc.png" style="top:190px; right:8.5%; width:40px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Barrel-Goblin" src="07 Anhänge/PixelArt/sprites/goblin_barrel_yellow.png" style="top:440px; right:8.5%; width:42px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Ritter Lila" src="07 Anhänge/PixelArt/sprites/warrior_purple.png" style="bottom:300px; right:3.5%; width:46px;">
+  <img class="dungeon-char" onclick="tapNpc(this)" title="Soldat" src="07 Anhänge/PixelArt/sprites/soldier.png" style="bottom:60px; right:3.5%; width:42px;">
+</div>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Raphi — persönliches Dashboard</div>
+    <h1>Roter Faden</h1>
+    <p>Studium abschließen. Beruflich und unternehmerisch erfolgreich sein. Fundierte Entscheidungen treffen. Finanziell unabhängig werden.</p>
+    <div class="updated">Stand: 26.07.2026 — statischer Schnappschuss, kein Live-Sync. Sag "aktualisiere mein Dashboard" für eine neue Version.</div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="showTab('dashboard', this)">Dashboard</button>
+    <button class="tab-btn" onclick="showTab('projekte', this)">Projekte</button>
+    <button class="tab-btn" onclick="showTab('portfolio', this)">Portfolio</button>
+    <button class="tab-btn" onclick="showTab('weltnews', this)">Weltnews</button>
+    <button class="tab-btn" onclick="showTab('persoenlichkeit', this)">Persönlichkeit</button>
+    <button class="tab-btn" onclick="showTab('nadelzwirn', this)">Nadel & Zwirn</button>
+    <button class="tab-btn" onclick="showTab('training', this)">Training</button>
+  </nav>
+
+  <div id="site-skyline">
+    <div class="npc-walk to-right" style="animation-duration:16s;" onclick="tapNpc(this)" title="Soldat – Bonus-XP"><div class="spr spr-soldier-walk"></div></div>
+    <div class="npc-walk to-left" style="animation-duration:19s; animation-delay:-6s;" onclick="tapNpc(this)" title="Ork – Bonus-XP"><div class="spr spr-orc-walk"></div></div>
+    <div class="npc-walk to-right" style="animation-duration:12s; animation-delay:-3s;" onclick="tapNpc(this)" title="Mönch – Bonus-XP"><div class="spr spr-monk-run"></div></div>
+    <div class="npc-walk to-left" style="animation-duration:23s; animation-delay:-11s;" onclick="tapNpc(this)" title="Soldat – Bonus-XP"><div class="spr spr-soldier-walk"></div></div>
+    <div class="dg-char spr-warrior-blue" onclick="collectSprite(this)" title="Ritter – Bonus-XP" style="position:absolute; bottom:2px; left:8%; z-index:5;"></div>
+    <div class="dg-char spr-pawn-purple" onclick="collectSprite(this)" title="Bauer – Bonus-XP" style="position:absolute; bottom:2px; left:70%; z-index:5;"></div>
+    <div class="dg-char spr-sheep" onclick="collectSprite(this)" title="Schaf – Bonus-XP" style="position:absolute; bottom:6px; left:90%; z-index:5;"></div>
+  </div>
+
+  <!-- ============ DASHBOARD TAB ============ -->
+  <div id="dashboard" class="tab-panel active">
+
+    <section>
+      <h2>Langfristige Ziele</h2>
+      <div class="vision-grid">
+        <div class="vision-tile"><div class="n">01</div><p>Studium erfolgreich abschließen</p></div>
+        <div class="vision-tile"><div class="n">02</div><p>Beruflich und unternehmerisch erfolgreich sein</p></div>
+        <div class="vision-tile"><div class="n">03</div><p>Fundierte Entscheidungen treffen</p></div>
+        <div class="vision-tile"><div class="n">04</div><p>Finanziell unabhängig werden</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>XP-Level</h2>
+      <div id="xp-panel">
+
+        <div class="pixel-box xp-header-box">
+          <div style="display:flex; align-items:center;">
+            <img class="char-avatar" src="07 Anhänge/PixelSpaces/PixelSpaces Free Pack/Pre-made NPCs/Male.png" alt="Raphi">
+            <div>
+              <div class="char-title pixel-font">RAPHI</div>
+              <div class="char-sub pixel-font" id="char-summary">Lädt...</div>
+            </div>
+          </div>
+          <div class="char-level-badge pixel-font" id="char-level-badge">LV. 1</div>
+        </div>
+
+        <div class="pixel-box">
+          <div class="xp-bar-outer xp-bar-big" id="big-xp-bar"></div>
+          <div class="xp-numbers pixel-font" style="margin-top:8px;">
+            <span id="big-xp-into">0 / 100 XP</span>
+            <span id="big-xp-total">GESAMT: 0 XP</span>
+          </div>
+        </div>
+
+        <div class="pixel-box">
+          <div class="char-title pixel-font" style="margin-bottom:14px;">+ XP SAMMELN</div>
+          <div id="skill-buttons" class="skill-btn-grid"></div>
+        </div>
+
+        <div class="pixel-box">
+          <div class="char-title pixel-font" style="margin-bottom:10px;">AUFTEILUNG</div>
+          <div id="skill-breakdown" class="char-sub pixel-font"></div>
+        </div>
+
+        <div class="pixel-box" style="text-align:center;">
+          <button class="pixel-btn reset-all pixel-font" onclick="resetAllXP()">Alles zurücksetzen</button>
+          <div class="char-sub pixel-font" style="margin-top:10px;">Fortschritt wird lokal im Browser gespeichert (localStorage). Anderer Browser/Rechner = neuer Spielstand.</div>
+        </div>
+
+      </div>
+    </section>
+
+    <section>
+      <h2>Datensicherung</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">XP-Level, Habit-Tracker und Checklisten-Fortschritt liegen nur lokal in diesem Browser (localStorage). Bei Cache-Löschung, neuem Gerät oder anderem Browser ist der Stand sonst weg. Sicherung als Datei speichern und bei Bedarf wieder einspielen.</p>
+      <div class="chart-card" style="display:flex; flex-wrap:wrap; gap:14px; align-items:center;">
+        <button class="pixel-btn pixel-font" onclick="exportProgress()">Fortschritt sichern (Datei speichern)</button>
+        <button class="pixel-btn pixel-font" onclick="document.getElementById('import-file-input').click()">Fortschritt laden (Datei wählen)</button>
+        <input type="file" id="import-file-input" accept=".json" style="display:none;" onchange="importProgress(this.files[0])">
+        <span id="backup-status" class="char-sub" style="margin:0;"></span>
+      </div>
+      <div class="char-sub" style="margin-top:10px;">Enthalten: XP-Punkte je Kategorie, Habit-Tracker-Häkchen der aktuellen Woche, offene Checklisten-Punkte, komplettes Trainings-Logbuch. Das Laden einer Sicherung überschreibt den aktuellen Stand in diesem Browser.</div>
+    </section>
+
+    <section>
+      <h2>Studienfortschritt</h2>
+      <div class="chart-row">
+        <div class="chart-card">
+          <h3>ECTS-Fortschritt</h3>
+          <p class="chart-sub">125 von 180 ECTS-Punkten</p>
+          <div class="ring-wrap">
+            <svg width="150" height="150" viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r="52" fill="none" stroke="var(--grid)" stroke-width="16"/>
+              <circle cx="70" cy="70" r="52" fill="none" stroke="var(--series-blue)" stroke-width="16"
+                stroke-dasharray="326.73" stroke-dashoffset="99.83" stroke-linecap="round"
+                transform="rotate(-90 70 70)"/>
+              <text x="70" y="66" text-anchor="middle" class="ring-center-value">69%</text>
+              <text x="70" y="84" text-anchor="middle" class="ring-center-label">125 / 180 ECTS</text>
+            </svg>
+          </div>
+          <div class="ring-legend">
+            <span><span class="dot" style="background:var(--series-blue)"></span>erreicht</span>
+            <span><span class="dot" style="background:var(--grid)"></span>offen (55 ECTS)</span>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Aktive Studien-/Prüfungsprojekte</h3>
+          <p class="chart-sub">Bachelorarbeit, Mathematik-Prüfung, Hausarbeiten</p>
+          <svg width="100%" height="170" viewBox="0 0 400 170" preserveAspectRatio="xMidYMid meet">
+            <!-- Bachelorarbeit ~15% textlich fertig -->
+            <text x="0" y="20" font-size="12" fill="var(--text-secondary)">Bachelorarbeit (Kapitel überarbeitet)</text>
+            <rect x="0" y="28" width="380" height="10" rx="5" fill="var(--grid)"/>
+            <rect x="0" y="28" width="47.5" height="10" rx="5" fill="var(--series-yellow)"/>
+            <text x="385" y="37" font-size="11" fill="var(--text-muted)" text-anchor="end">1/8</text>
+
+            <text x="0" y="70" font-size="12" fill="var(--text-secondary)">Mathematik-Prüfung (Lernplan-Vorbereitung)</text>
+            <rect x="0" y="78" width="380" height="10" rx="5" fill="var(--grid)"/>
+            <rect x="0" y="78" width="380" height="10" rx="5" fill="var(--series-green)"/>
+            <text x="385" y="87" font-size="11" fill="var(--text-muted)" text-anchor="end">11/11</text>
+
+            <text x="0" y="120" font-size="12" fill="var(--text-secondary)">Hausarbeiten (Themen/Fristen erfasst)</text>
+            <rect x="0" y="128" width="380" height="10" rx="5" fill="var(--grid)"/>
+            <rect x="0" y="128" width="0" height="10" rx="5" fill="var(--status-critical)"/>
+            <text x="385" y="137" font-size="11" fill="var(--text-muted)" text-anchor="end">0/1</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Laufende Bereiche</h2>
+      <div class="bereiche-list">
+        <div class="bereich-row">
+          <span class="label">Arbeit — GALVI Textildruck</span>
+          <span class="desc">Firmenkunden, Kundenakquise, Wechsel Teilzeit → Vollzeit (Juli–Sept.) → 25 Std./Woche (ab Okt.)</span>
+        </div>
+        <div class="bereich-row">
+          <span class="label">Finanzen</span>
+          <span class="desc">Portfolio, Sparziele, Investitionsplan — Details unten</span>
+        </div>
+        <div class="bereich-row">
+          <span class="label">Gesundheit und Bodybuilding</span>
+          <span class="desc">Training, Ernährung — im Aufbau</span>
+        </div>
+        <div class="bereich-row">
+          <span class="label">Weltpolitik</span>
+          <span class="desc">Siehe Reiter "Weltnews"</span>
+        </div>
+        <div class="bereich-row">
+          <span class="label">Persönlichkeitsentwicklung</span>
+          <span class="desc">Selbstwahrnehmung, Charakterentwicklung, Habits — im Aufbau</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Finanzen — Sparverhalten und Sparziele</h2>
+
+      <div class="chart-row" style="margin-bottom:24px;">
+        <div class="chart-card">
+          <h3>Sparziele Jahresende</h3>
+          <p class="chart-sub">Stand heute vs. Ziel</p>
+          <div class="progress-item">
+            <div class="row"><span>Stickmaschine</span><span class="amount">1.800 € / 4.000 €</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:45%; background:var(--series-aqua);"></div></div>
+          </div>
+          <div class="progress-item" style="margin-bottom:0;">
+            <div class="row"><span>Rest / Allgemein</span><span class="amount">6.600 € / 8.000 €</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:82.5%; background:var(--series-blue);"></div></div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Kumulierte Ersparnis Juli–Dezember (Prognose)</h3>
+          <p class="chart-sub">Inkl. Kawasaki-Einmalkosten (Sept.) und Weihnachtsgeld (Dez.)</p>
+          <svg width="100%" height="240" viewBox="0 0 640 240" preserveAspectRatio="xMidYMid meet">
+            <!-- gridlines -->
+            <line x1="40" y1="20" x2="620" y2="20" stroke="var(--grid)" stroke-width="1"/>
+            <line x1="40" y1="105" x2="620" y2="105" stroke="var(--grid)" stroke-width="1"/>
+            <line x1="40" y1="210" x2="620" y2="210" stroke="var(--text-muted)" stroke-width="1"/>
+            <!-- reference target line at 3.600 € -->
+            <line x1="40" y1="71" x2="620" y2="71" stroke="var(--status-warning)" stroke-width="1.5" stroke-dasharray="4 4"/>
+            <text x="620" y="66" text-anchor="end" class="ref-label">Ziel: 3.600 €</text>
+            <!-- area -->
+            <path d="M40,210 L136.7,164.7 L233.3,119.3 L330,124.2 L426.7,105.8 L523.3,87.5 L620,20 L620,210 L40,210 Z"
+                  fill="var(--series-blue)" opacity="0.12"/>
+            <!-- line -->
+            <path d="M40,210 L136.7,164.7 L233.3,119.3 L330,124.2 L426.7,105.8 L523.3,87.5 L620,20"
+                  fill="none" stroke="var(--series-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- points -->
+            <circle cx="40" cy="210" r="4" fill="var(--series-blue)"/>
+            <circle cx="136.7" cy="164.7" r="4" fill="var(--series-blue)"/>
+            <circle cx="233.3" cy="119.3" r="4" fill="var(--series-blue)"/>
+            <circle cx="330" cy="124.2" r="4" fill="var(--series-orange)"/>
+            <circle cx="426.7" cy="105.8" r="4" fill="var(--series-blue)"/>
+            <circle cx="523.3" cy="87.5" r="4" fill="var(--series-blue)"/>
+            <circle cx="620" cy="20" r="5" fill="var(--series-green)"/>
+            <!-- value labels -->
+            <text x="136.7" y="155" text-anchor="middle" class="line-value-label">1.174 €</text>
+            <text x="330" y="140" text-anchor="middle" class="line-value-label" fill="var(--series-orange)">2.222 € (Kawasaki)</text>
+            <text x="620" y="12" text-anchor="end" class="line-value-label" fill="var(--series-green)">4.921 €</text>
+            <!-- month labels -->
+            <g class="line-labels">
+              <text x="40" y="228" text-anchor="middle">Start</text>
+              <text x="136.7" y="228" text-anchor="middle">Jul</text>
+              <text x="233.3" y="228" text-anchor="middle">Aug</text>
+              <text x="330" y="228" text-anchor="middle">Sep</text>
+              <text x="426.7" y="228" text-anchor="middle">Okt</text>
+              <text x="523.3" y="228" text-anchor="middle">Nov</text>
+              <text x="620" y="228" text-anchor="middle">Dez</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-tile">
+          <div class="label">Bestehendes Aktienportfolio</div>
+          <div class="value">~1.997 €</div>
+          <div class="sub">Kaufwert 2.012 € · Δ ‑0,7%</div>
+        </div>
+        <div class="stat-tile">
+          <div class="label">Investitionsplan Ende 2026</div>
+          <div class="value">2.100 €</div>
+          <div class="sub">70/30 ETF-Kern + 6 Einzelaktien-Satelliten</div>
+        </div>
+        <div class="stat-tile">
+          <div class="label">Sparquote (Vollzeit-Phase)</div>
+          <div class="value good">~48,4%</div>
+          <div class="sub">Juli–September, inkl. Provision</div>
+        </div>
+        <div class="stat-tile">
+          <div class="label">Prognose-Puffer Jahresende</div>
+          <div class="value good">~1.321 €</div>
+          <div class="sub">Nach Kawasaki-Kosten &amp; Weihnachtsgeld</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Einnahmen-Ausgaben-Rechner</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">Phase wählen oder Werte direkt anpassen — Sparbetrag, Sparquote und Hochrechnung bis Jahresende werden live neu berechnet.</p>
+      <div class="chart-card calc-card">
+        <div class="calc-grid">
+          <label>GALVI-Phase
+            <select id="fin-phase" onchange="finApplyPhase()">
+              <option value="teilzeit">Teilzeit 20h (bisher)</option>
+              <option value="vollzeit">Vollzeit 38,5h (Jul–Sep)</option>
+              <option value="25h">25h ab Oktober</option>
+              <option value="custom">Eigener Wert</option>
+            </select>
+          </label>
+          <label>Gehalt netto (€/Monat)
+            <input type="number" id="fin-gehalt" value="1824" min="0" step="1" oninput="finRun()">
+          </label>
+          <label>Provision (€/Monat)
+            <input type="number" id="fin-provision" value="150" min="0" step="1" oninput="finRun()">
+          </label>
+          <label>Familienbeihilfe (€/Monat)
+            <input type="number" id="fin-familienbeihilfe" value="270" min="0" step="1" oninput="finRun()">
+          </label>
+          <label>Wohnbeihilfe (€/Monat)
+            <input type="number" id="fin-wohnbeihilfe" value="180" min="0" step="1" oninput="finRun()">
+          </label>
+          <label>Sonstige Einnahmen (€/Monat)<span class="calc-hint">z.B. Nebengewerbe, Nebenjob</span>
+            <input type="number" id="fin-sonstige-einnahmen" value="0" min="0" step="1" oninput="finRun()">
+          </label>
+          <label>Grundausgaben (€/Monat)
+            <input type="number" id="fin-grundausgaben" value="1000" min="0" step="1" oninput="finRun()">
+          </label>
+          <label>Sprit / Pendeln (€/Monat)
+            <input type="number" id="fin-sprit" value="250" min="0" step="1" oninput="finRun()">
+          </label>
+          <label>Sonstige Ausgaben (€/Monat)<span class="calc-hint">z.B. Kawasaki, Anschaffungen</span>
+            <input type="number" id="fin-sonstige-ausgaben" value="0" min="0" step="1" oninput="finRun()">
+          </label>
+          <label>Monate bis Jahresende<span class="calc-hint">für die Hochrechnung unten</span>
+            <input type="number" id="fin-monate" value="5" min="0" max="12" step="1" oninput="finRun()">
+          </label>
+        </div>
+
+        <div class="calc-results">
+          <div class="calc-result-tile"><span class="lbl">Einnahmen gesamt</span><span class="val" id="fin-res-einnahmen">–</span></div>
+          <div class="calc-result-tile"><span class="lbl">Ausgaben gesamt</span><span class="val" id="fin-res-ausgaben">–</span></div>
+          <div class="calc-result-tile highlight" id="fin-tile-sparbetrag"><span class="lbl">Sparbetrag / Monat</span><span class="val" id="fin-res-sparbetrag">–</span></div>
+          <div class="calc-result-tile highlight" id="fin-tile-sparquote"><span class="lbl">Sparquote</span><span class="val" id="fin-res-sparquote">–</span></div>
+          <div class="calc-result-tile highlight"><span class="lbl">Hochrechnung bis Jahresende</span><span class="val" id="fin-res-hochrechnung">–</span></div>
+        </div>
+        <div class="char-sub" style="margin-top:12px;">Vorbelegt mit den Werten aus deiner Finanzplanung (Vollzeit-Phase Juli–September). Weihnachtsgeld und Kawasaki-Einmalkosten sind hier nicht automatisch eingerechnet — trag sie bei Bedarf unter "Sonstige Einnahmen/Ausgaben" ein.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Vision — wohin das führt</h2>
+      <div class="vision-note">
+        <b>Das hier ist eine Ableitung aus deinen bisherigen Zielen, keine Aussage, die du wörtlich so getroffen hast.</b>
+        Ergänze oder korrigiere sie gerne: Ein abgeschlossenes BWL-Studium als Fundament, ein wachsendes zweites Standbein mit Nadel &amp; Zwirn neben dem Job bei GALVI, ein solides finanzielles Polster über Sparen und ein diversifiziertes Portfolio, dazu Projekte, die reine Freude sind, ohne wirtschaftlichen Zweck: die restaurierte Kawasaki Z400 B und Slowenisch, das flüssig sitzt.
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ PROJEKTE TAB ============ -->
+  <div id="projekte" class="tab-panel">
+    <section>
+      <h2>Aktive Projekte</h2>
+      <div class="card-grid">
+
+        <div class="card">
+          <h3>Bachelorarbeit</h3>
+          <span class="badge warning">In Bearbeitung</span>
+          <p class="ziel">Pioniervorteil durch strategische Differenzierung — Uni Klagenfurt, BWL.</p>
+          <div class="next-step"><b>Nächster Schritt:</b> Kapitel 2 (Theoretische Bezugsrahmen) und Kapitel 3–8 händisch überarbeiten, neuen unregelmäßigeren Stil testen.</div>
+          <details>
+            <summary>Aktuelle Themen anzeigen</summary>
+            <ul>
+              <li>Thema: Pioniervorteil durch strategische Differenzierung</li>
+              <li>Kapitel 2 fertig überarbeitet: Begriffliche Abgrenzung, Der Pioniervorteil in der Literatur, Strategische Differenzierung</li>
+              <li>Kapitel 2 offen: Theoretische Bezugsrahmen (RBV, Dynamic Capabilities, Porter, Ökosystem)</li>
+              <li>Kapitel 3–8: noch im Original-Entwurf, nicht überarbeitet</li>
+              <li>AI-Detektor-Test: humanizeai.pro/detector als bevorzugtes Tool bestätigt</li>
+              <li>Regel: keine Gedankenstriche, rote Passagen nicht anfassen</li>
+            </ul>
+          </details>
+        </div>
+
+        <div class="card">
+          <h3>Mathematik-Prüfung (Methoden I)</h3>
+          <span class="badge good">Startklar</span>
+          <p class="ziel">Laut Raphi die schwerste Prüfung im Studium. 9-Wochen-Lernplan mit 11 Themen, je ≥30 Beispielen, komplett vorbereitet.</p>
+          <div class="next-step"><b>Nächster Schritt:</b> Woche 1 (Fundament: Potenz-/Wurzelgesetze, Gleichungen) starten.</div>
+          <details>
+            <summary>Aktuelle Themen anzeigen</summary>
+            <ul>
+              <li>Woche 1: Fundament (Potenz-/Wurzelgesetze, Gleichungen, LGS)</li>
+              <li>Woche 2–3: Logik/Mengenlehre, Summennotation</li>
+              <li>Woche 4–6: Funktionen einer Variablen, Eigenschaften von Funktionen (größtes Kapitel)</li>
+              <li>Woche 7–8: Differentialrechnung, Anwendungen, Optimierung, Geometrische Reihen</li>
+              <li>Woche 9: Mehrere Variablen, Generalwiederholung, Probeklausur</li>
+              <li>Alle 11 Themen-Dateien mit Theoriebaum + Beispielen bereits fertig</li>
+            </ul>
+          </details>
+        </div>
+
+        <div class="card">
+          <h3>Nebengewerbe Stickerei — Nadel & Zwirn</h3>
+          <span class="badge good">Aktiv</span>
+          <p class="ziel">Eigenes Stickerei-Standbein in Klagenfurt, Firmenlogo- und Cap-Stickerei, Shopify-Store läuft.</p>
+          <div class="next-step"><b>Nächster Schritt:</b> Start Anfang 2027. Rabattstaffel und Shopify-Rechtstexte noch offen.</div>
+          <details>
+            <summary>Aktuelle Themen anzeigen</summary>
+            <ul>
+              <li>Unternehmenskontext, Businessplan, Excel-Kalkulation, Preisliste</li>
+              <li>Kundenakquise-Liste (272 Firmeneinträge, Klagenfurt-Region)</li>
+              <li>Offene Punkte: Rabattstaffel −3/−8/−12/−16/−20% angleichen</li>
+              <li>Shopify-Store: Theme- und Rechtstext-Arbeit in "Kopie von Savor"</li>
+              <li>Materialkosten-Lücke in Excel (Zelle P6 leer) noch zu füllen</li>
+            </ul>
+          </details>
+        </div>
+
+        <div class="card">
+          <h3>Slowenischkurs</h3>
+          <span class="badge good">Aktiv</span>
+          <p class="ziel">Aktiv Slowenisch sprechen lernen, ~15–20 Min./Tag, Anki-System mit 395 Vokabeln + 100 Sätzen.</p>
+          <div class="next-step"><b>Nächster Schritt:</b> Tagesroutine (Anki + Sprechpraxis + Konversation) konsequent beibehalten.</div>
+          <details>
+            <summary>Aktuelle Themen anzeigen</summary>
+            <ul>
+              <li>Lernsystem: 395 Vokabelkarten (11 Decks), 100 Sätze (7 Decks)</li>
+              <li>Tagesroutine: ~10 Min. Anki, ~5 Min. Sprechpraxis, ~5 Min. Konversation</li>
+              <li>Lernprinzip: Aktivierung vor Input, Chunk-basiertes Phrasenlernen</li>
+              <li>Offen: Anki-Decks und App-Quellcode noch nicht als Datei hinterlegt</li>
+            </ul>
+          </details>
+        </div>
+
+        <div class="card">
+          <h3>Kawasaki Z400 B 1978 — Aufbau</h3>
+          <span class="badge good">Aktiv</span>
+          <p class="ziel">Eigene Kawasaki Z400 B komplett neu aufbauen und reparieren.</p>
+          <div class="next-step"><b>Geplante Kosten:</b> Führerschein 500 € + Ausrüstung 300 € + Werkstatt 500 € = 1.300 €.</div>
+          <details>
+            <summary>Aktuelle Themen anzeigen</summary>
+            <ul>
+              <li>Führerschein (Motorrad): 500 €</li>
+              <li>Motorradausrüstung: 300 €</li>
+              <li>Werkstatt: 500 €</li>
+              <li>Finanzierung über Sparplan, siehe Finanzen-Sektion im Dashboard</li>
+            </ul>
+          </details>
+        </div>
+
+        <div class="card">
+          <h3>Hausarbeiten</h3>
+          <span class="badge critical">Offen</span>
+          <p class="ziel">Laufende Hausarbeiten im Studium recherchieren, ausarbeiten und fristgerecht abgeben.</p>
+          <div class="next-step"><b>Nächster Schritt:</b> Konkrete Themen/Fristen noch nicht erfasst — als Nächstes festlegen.</div>
+          <details>
+            <summary>Aktuelle Themen anzeigen</summary>
+            <ul>
+              <li>Noch keine Themen oder Fristen im Vault hinterlegt</li>
+              <li>Sag mir die aktuellen Hausarbeiten-Themen, dann trage ich sie hier ein</li>
+            </ul>
+          </details>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ PORTFOLIO TAB ============ -->
+  <div id="portfolio" class="tab-panel">
+  <div class="portfolio-layout">
+  <div class="portfolio-main">
+
+    <section>
+      <h2>Portfolio-Kennzahlen</h2>
+      <div class="stat-row">
+        <div class="stat-tile">
+          <div class="label">Kaufwert gesamt</div>
+          <div class="value">2.012 €</div>
+          <div class="sub">12 Positionen, Kauf 01.01.2026</div>
+        </div>
+        <div class="stat-tile">
+          <div class="label">Aktueller Wert</div>
+          <div class="value">~1.997 €</div>
+          <div class="sub">Δ ‑0,7% seit Kauf · ‑0,6% seit 25.07.</div>
+        </div>
+        <div class="stat-tile">
+          <div class="label">Positionen</div>
+          <div class="value">12</div>
+          <div class="sub">3 Länder, 8 Sektoren</div>
+        </div>
+        <div class="stat-tile">
+          <div class="label">Neues Kapital geplant</div>
+          <div class="value">2.100 €</div>
+          <div class="sub">Ende 2026, 70/30-ETF-Kern</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Positionen nach Volumen</h2>
+      <div class="chart-card">
+        <p class="chart-sub">Aktueller Wert je Position, farbcodiert nach Land</p>
+        <div class="rank-bar-row"><span class="name">Siemens Energy</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:100%; background:var(--series-aqua);"></div></div><span class="val">295 €</span></div>
+        <div class="rank-bar-row"><span class="name">PayPal</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:84.1%; background:var(--series-blue);"></div></div><span class="val">248 €</span></div>
+        <div class="rank-bar-row"><span class="name">China Mobile</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:74.2%; background:var(--series-violet);"></div></div><span class="val">219 €</span></div>
+        <div class="rank-bar-row"><span class="name">BYD</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:68.5%; background:var(--series-violet);"></div></div><span class="val">202 €</span></div>
+        <div class="rank-bar-row"><span class="name">UnitedHealth</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:56.3%; background:var(--series-blue);"></div></div><span class="val">166 €</span></div>
+        <div class="rank-bar-row"><span class="name">Apple</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:51.5%; background:var(--series-blue);"></div></div><span class="val">152 €</span></div>
+        <div class="rank-bar-row"><span class="name">Lam Research</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:48.8%; background:var(--series-blue);"></div></div><span class="val">144 €</span></div>
+        <div class="rank-bar-row"><span class="name">Unklar (DE Software)</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:47.8%; background:var(--series-aqua);"></div></div><span class="val">141 €</span></div>
+        <div class="rank-bar-row"><span class="name">Unklar (CN Transport)</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:45.8%; background:var(--series-violet);"></div></div><span class="val">135 €</span></div>
+        <div class="rank-bar-row"><span class="name">BMW</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:38.6%; background:var(--series-aqua);"></div></div><span class="val">114 €</span></div>
+        <div class="rank-bar-row"><span class="name">Amazon</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:37.6%; background:var(--series-blue);"></div></div><span class="val">111 €</span></div>
+        <div class="rank-bar-row"><span class="name">Microsoft</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:23.7%; background:var(--series-blue);"></div></div><span class="val">70 €</span></div>
+        <div class="ring-legend" style="justify-content:flex-start; margin-top:14px;">
+          <span><span class="dot" style="background:var(--series-blue)"></span>USA (45%)</span>
+          <span><span class="dot" style="background:var(--series-aqua)"></span>Deutschland (27%)</span>
+          <span><span class="dot" style="background:var(--series-violet)"></span>China (28%)</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Geografische und sektorale Streuung</h2>
+      <div class="chart-row">
+        <div class="chart-card">
+          <h3>Geografische Streuung</h3>
+          <p class="chart-sub">Nach aktuellem Wert</p>
+          <div class="donut-row">
+            <div class="donut" style="background: conic-gradient(var(--series-blue) 0% 44.62%, var(--series-aqua) 44.62% 72.16%, var(--series-violet) 72.16% 100%);"></div>
+            <div class="donut-legend">
+              <span><span class="dot" style="background:var(--series-blue)"></span>USA<span class="pct">44,6%</span></span>
+              <span><span class="dot" style="background:var(--series-aqua)"></span>Deutschland<span class="pct">27,5%</span></span>
+              <span><span class="dot" style="background:var(--series-violet)"></span>China<span class="pct">27,9%</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Sektor-Verteilung</h3>
+          <p class="chart-sub">Nach aktuellem Wert, 8 Sektoren</p>
+          <div class="donut-row">
+            <div class="donut" style="background: conic-gradient(
+              var(--series-blue) 0% 18.18%,
+              var(--series-green) 18.18% 30.60%,
+              var(--series-magenta) 30.60% 36.16%,
+              var(--series-yellow) 36.16% 51.98%,
+              var(--series-aqua) 51.98% 66.75%,
+              var(--series-orange) 66.75% 73.96%,
+              var(--series-violet) 73.96% 82.27%,
+              var(--series-red) 82.27% 100%);"></div>
+            <div class="donut-legend">
+              <span><span class="dot" style="background:var(--series-blue)"></span>Tech/Software<span class="pct">18,2%</span></span>
+              <span><span class="dot" style="background:var(--series-green)"></span>Fintech<span class="pct">12,4%</span></span>
+              <span><span class="dot" style="background:var(--series-magenta)"></span>E-Commerce<span class="pct">5,6%</span></span>
+              <span><span class="dot" style="background:var(--series-yellow)"></span>Automobile<span class="pct">15,8%</span></span>
+              <span><span class="dot" style="background:var(--series-aqua)"></span>Energie<span class="pct">14,8%</span></span>
+              <span><span class="dot" style="background:var(--series-orange)"></span>Halbleiter<span class="pct">7,2%</span></span>
+              <span><span class="dot" style="background:var(--series-violet)"></span>Healthcare<span class="pct">8,3%</span></span>
+              <span><span class="dot" style="background:var(--series-red)"></span>Telekom/Transport<span class="pct">17,7%</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Positionen im Detail</h2>
+      <div class="table-wrap">
+        <table class="pos-table">
+          <thead>
+            <tr><th>Unternehmen</th><th>Land</th><th>Sektor</th><th class="num">Wert</th><th class="num">Δ</th><th>Einschätzung</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>PayPal</td><td>US</td><td>Fintech</td><td class="num">248 €</td><td class="num delta-pos">+8,2%</td><td>Board evaluiert mit Goldman/Evercore Alternativen</td></tr>
+            <tr><td>Apple</td><td>US</td><td>Tech</td><td class="num">152 €</td><td class="num delta-pos">+18,7%</td><td>Stabil nahe Rekordhoch, Zahlen 30.07.</td></tr>
+            <tr><td>Amazon</td><td>US</td><td>E-Commerce</td><td class="num">111 €</td><td class="num delta-neg">‑8,6%</td><td>Leicht rückläufig, Zahlen 30.07.</td></tr>
+            <tr><td>BMW</td><td>DE</td><td>Automobile</td><td class="num">114 €</td><td class="num delta-neg">‑34,6%</td><td>Nahe 52-Wochen-Tief vor Halbjahreszahlen</td></tr>
+            <tr><td>Microsoft</td><td>US</td><td>Software</td><td class="num">70 €</td><td class="num delta-neg">‑27,5%</td><td>Nahe 1-Jahres-Tief, Zahlen 29.07. als Katalysator erwartet</td></tr>
+            <tr><td>Unklar (A0M4LC)</td><td>CN</td><td>Transport</td><td class="num">135 €</td><td class="num">n/a</td><td>Nicht identifiziert</td></tr>
+            <tr><td>Siemens Energy</td><td>DE</td><td>Energie</td><td class="num">295 €</td><td class="num delta-pos">+3,0%</td><td>Leicht rückläufig, UBS-Kursziel 210 € bleibt</td></tr>
+            <tr><td>Lam Research</td><td>US</td><td>Halbleiter</td><td class="num">144 €</td><td class="num delta-pos">+20,3%</td><td>Rücksetzer nach starkem Lauf, Zahlen 29.07.</td></tr>
+            <tr><td>UnitedHealth</td><td>US</td><td>Healthcare</td><td class="num">166 €</td><td class="num delta-pos">+13,0%</td><td>Leicht rückläufig nach Rekordhoch</td></tr>
+            <tr><td>BYD</td><td>CN</td><td>Automobile</td><td class="num">202 €</td><td class="num delta-neg">‑7,4%</td><td>Stabil, Kursziel weiter deutlich höher</td></tr>
+            <tr><td>Unklar (A2YN90)</td><td>DE</td><td>Software</td><td class="num">141 €</td><td class="num">n/a</td><td>Nicht identifiziert</td></tr>
+            <tr><td>China Mobile</td><td>CN</td><td>Telekom</td><td class="num">219 €</td><td class="num delta-pos">+2,1%</td><td>Defensiv, 6,3% Dividende</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Empfehlung — Neues Kapital 2.100 € (Ende 2026)</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">Core-Satellite-Ansatz, jetzt mit stärkerem Health-Fokus auf deinen Wunsch angepasst</p>
+      <div class="rec-grid">
+        <div class="rec-card">
+          <span class="rec-tag">ETF-Kern 55%</span>
+          <h3>1.155 € — 70/30-Regel</h3>
+          <p>808,50 € iShares Core MSCI World + 346,50 € iShares Core MSCI EM IMI. Reduziert USA-Übergewichtung eines reinen World-ETF.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-tag">Satellit 45%, Health verdoppelt</span>
+          <h3>945 € — 7 Positionen</h3>
+          <p>157,50 € UnitedHealth (Top-up, nach starkem Q2) + 157,50 € Xtrackers MSCI World Health Care ETF (breite Streuung: J&amp;J, Eli Lilly, AbbVie, UnitedHealth). Je 126 € in Amazon, Microsoft, Siemens Energy, BYD, Lam Research.</p>
+        </div>
+      </div>
+      <p class="chart-sub" style="margin-top:14px;">Healthcare-Anteil im Satelliten steigt damit von ca. 17% auf 33% des neuen Kapitals (315 € statt 157,50 €). Grund für den ETF statt einer zweiten Einzelaktie: UnitedHealth ist nach dem Kurssprung diese Woche schon stark gelaufen, der ETF streut das Risiko auf ca. 120 Werte statt auf eine zweite Einzelwette zu setzen.</p>
+    </section>
+
+    <section>
+      <h2>Empfehlungen basierend auf dem Weltmarkt</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">Spekulative Ideen abseits der bekannten Namen, kein Kaufsignal, nur Rechercheausgangspunkt</p>
+      <div class="rec-grid">
+        <div class="rec-card">
+          <span class="rec-tag">Neu · aus Weltnews</span>
+          <h3>Chevron</h3>
+          <p>Laut Weltnews-Meldung direkt am Wiederaufbau der Irak-Syrien-Pipeline beteiligt (Transportkapazität 2 Mio. Barrel/Tag), zusätzlich zwei weitere Irak-Fördervereinbarungen unterzeichnet.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-tag spekulativ">Verteidigung</span>
+          <h3>RENK</h3>
+          <p>Getriebe-/Antriebssysteme für Militärfahrzeuge, kleiner als Rheinmetall, hohe Markteintrittsbarrieren.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-tag spekulativ">Verteidigung</span>
+          <h3>Howmet Aerospace</h3>
+          <p>Hochleistungslegierungen für Luft-/Raumfahrt und Militär, indirekte Beteiligung am Rüstungsboom.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-tag spekulativ">KI-Infrastruktur</span>
+          <h3>Vertiv Holdings</h3>
+          <p>Kühlung/Stromverteilung für Rechenzentren, über 70% Umsatz aus dem Datacenter-Geschäft.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-tag spekulativ">KI-Infrastruktur</span>
+          <h3>Eaton</h3>
+          <p>Power-Management, Partnerschaft mit Nvidia für KI-Fabrikdesigns.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-tag spekulativ">Kritische Rohstoffe</span>
+          <h3>Arafura / Iluka Resources</h3>
+          <p>Seltene-Erden-Nebenwerte (Australien), hochvolatil, abhängig von China-Nachrichten und Genehmigungen.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <!-- /portfolio-main -->
+
+  <aside class="portfolio-sidebar">
+    <h3>Portfolio-News</h3>
+    <p class="chart-sub">Aktuelle Meldungen zu deinen Positionen, Stand 26.07.2026 — Anlagestrategie mittel- bis langfristig, keine Anlageberatung</p>
+
+    <details class="stock-news-item">
+      <summary>UnitedHealth <span class="arrow">▸</span></summary>
+      <div class="snippet">Stand 25.07.: Kurs ~420 USD, leicht unter dem jüngsten Hoch (bis 429 USD), nach starkem Q2 (Umsatz 112 Mrd. USD, Gewinnprognose auf 19,50–20,00 USD/Aktie angehoben). Diskussion, ob die Aktie auf 500 USD zulaufen kann.
+        <br><a href="https://finance.yahoo.com/markets/stocks/articles/unitedhealth-stock-headed-500-121226625.html" target="_blank">Quelle: Yahoo Finance</a>
+        <br><span class="action-tag halten">Halten</span> — fundamental stark, aber nach dem Kurssprung schon viel eingepreist<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      </div>
+    </details>
+
+    <details class="stock-news-item">
+      <summary>PayPal <span class="arrow">▸</span></summary>
+      <div class="snippet">Stand 26.07.: Board hat das 60,50-USD-Angebot als "unzureichend" abgelehnt und arbeitet inzwischen mit Goldman Sachs und Evercore an Alternativen, inklusive möglichem Verkauf oder Aufspaltung. Kurs hält sich stabil nahe dem Angebotsniveau.
+        <br><a href="https://www.bloomberg.com/news/articles/2026-07-15/stripe-advent-offer-to-buy-paypal-for-53-billion-reuters-says" target="_blank">Quelle: Bloomberg</a>
+        <br><span class="action-tag beobachten">Beobachten</span> — Ausgang der Alternativen-Prüfung abwarten, vor Klarheit nicht nachkaufen<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      </div>
+    </details>
+
+    <details class="stock-news-item">
+      <summary>Apple <span class="arrow">▸</span></summary>
+      <div class="snippet">Stand 25.07.: Kurs stabil bei ~333,74 USD, hält sich nahe dem 52-Wochen-Hoch. Q3-Zahlen am 30.07. (letzte PK von Tim Cook als CEO). Weiterhin als leicht überbewertet, aber mit starkem GF-Score eingestuft.
+        <br><a href="https://www.benzinga.com/trading-ideas/long-ideas/26/07/60550200/apple-unitedhealth-group-and-a-basic-material-stock-cnbcs-final-trades" target="_blank">Quelle: Benzinga</a>
+        <br><span class="action-tag halten">Halten</span> — nahe Rekordhoch, Bewertung ambitioniert, Zahlen am 30.07. abwarten<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      </div>
+    </details>
+
+    <details class="stock-news-item">
+      <summary>Amazon <span class="arrow">▸</span></summary>
+      <div class="snippet">Stand 25.07.: Kurs ~232 USD, leicht rückläufig. Q2-Zahlen am 30.07. Capex 2026 ca. 200 Mrd. USD für KI/Rechenzentren. Analystenkonsens weiterhin klar positiv: 57 von 60 Kaufempfehlungen, Kursziel ~312,52 USD.
+        <br><a href="https://www.boerse-express.com/news/articles/amazon-aktie-200-milliarden-capex-2026-fuer-ki-929010" target="_blank">Quelle: Börse Express</a>
+        <br><span class="action-tag nachkaufen">Nachkaufen</span> — Rücksetzer bei klar positivem Konsens, für langfristige Position geeignet<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      </div>
+    </details>
+
+    <details class="stock-news-item">
+      <summary>BMW <span class="arrow">▸</span></summary>
+      <div class="snippet">Stand 25.07.: Kurs 56,86 €, direkt am 52-Wochen-Tief (56,40 €), −37% YTD. H1: 1,15 Mio. Auslieferungen (−4,2%), Europa +5,4%, USA +3,9%, China −30%. Halbjahresbericht offiziell am 30.07. 4 von 5 Analysten raten trotzdem zum Kauf.
+        <br><a href="https://www.boerse-express.com/news/articles/bmw-aktie-halbjahresbericht-am-30-juli-932167" target="_blank">Quelle: Börse Express</a>
+        <br><span class="action-tag beobachten">Beobachten</span> — fundamental unter Druck, Halbjahreszahlen 30.07. abwarten<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      </div>
+    </details>
+
+    <details class="stock-news-item">
+      <summary>Microsoft <span class="arrow">▸</span></summary>
+      <div class="snippet">Stand 25.07.: Aktie nahe 1-Jahres-Tief, −20% YTD (zeitweise −35% vom Allzeithoch). Grund: Sorge um Rendite der KI-Capex (190 Mrd. USD 2026, +61% ggü. Vorjahr). Q4-Zahlen am 29.07. gelten als möglicher Wendepunkt, falls Azure-Wachstum überzeugt. Bewertung mit unter 20x Gewinn günstig (5-Jahres-Schnitt: 30x).
+        <br><a href="https://www.fool.com/investing/2026/07/25/microsoft-stock-is-near-a-1-year-low-that-could/" target="_blank">Quelle: The Motley Fool</a>
+        <br><span class="action-tag halten">Halten</span> — Cloud-Geschäft intakt, Zahlen 29.07. als möglicher Wendepunkt abwarten<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      </div>
+    </details>
+
+    <details class="stock-news-item">
+      <summary>Siemens Energy <span class="arrow">▸</span></summary>
+      <div class="snippet">Stand 25.07.: Kurs ~150,43 €, über die letzten 30 Tage −7,2% (Monat −9,6%), nach dem starken Lauf der letzten Wochen eine Verschnaufpause. S&amp;P-Rating-Upgrade auf BBB+ und erhöhte Kursziele (JPMorgan 235€, BofA 260€) bleiben bestehen. Q3-Zahlen am 05.08.
+        <br><a href="https://www.boerse.de/aktien/Siemens-Energy-Aktie/DE000ENER6Y0" target="_blank">Quelle: boerse.de</a>
+        <br><span class="action-tag nachkaufen">Nachkaufen</span> — Rücksetzer nach starkem Lauf, Kursziele weiterhin deutlich über aktuellem Niveau<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      </div>
+    </details>
+
+    <details class="stock-news-item">
+      <summary>Lam Research <span class="arrow">▸</span></summary>
+      <div class="snippet">Stand 26.07.: Aktie weiterhin +114% seit Jahresbeginn, zuletzt etwas schwankend zwischen 301,68 und 319,70 USD. Morgan Stanley erwartet "Beat and Raise" bei den Zahlen am 29.07. Kursziele weit gestreut (300–500 USD).
+        <br><a href="https://www.cnbc.com/quotes/LRCX" target="_blank">Quelle: CNBC</a>
+        <br><span class="action-tag beobachten">Beobachten</span> — stark gelaufen, Zahlen am 29.07. vor Aufstockung abwarten<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      </div>
+    </details>
+
+    <details class="stock-news-item">
+      <summary>BYD <span class="arrow">▸</span></summary>
+      <div class="snippet">Stand 25.07.: Kurs stabil bei 88,65 HKD (~9,76 €), H1-Auslandsverkäufe weiterhin stark (789.000 Fahrzeuge, +68% ggü. H1 2025). 52-Wochen-Spanne 71,40–132,00 HKD, Analysten-Kursziel im Schnitt deutlich höher als aktuelles Niveau.
+        <br><a href="https://www.investing.com/equities/byd-co." target="_blank">Quelle: Investing.com</a>
+        <br><span class="action-tag nachkaufen">Nachkaufen</span> — starkes operatives Auslandswachstum, Kursziel klar über aktuellem Niveau<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      </div>
+    </details>
+
+    <details class="stock-news-item">
+      <summary>China Mobile <span class="arrow">▸</span></summary>
+      <div class="snippet">Stand 23.07. (keine neuere Kursmeldung gefunden): Kurs stabil (~78,75 HKD), Forward-Dividendenrendite 6,3%, letzte Dividende 2,52 HKD. Wachstumstreiber: 5G-/Glasfaser-Migration. Regulatorisches Risiko: Die FCC prüft, China Mobile aus ihrer US-Robocall-Datenbank zu entfernen.
+        <br><a href="https://www.digrin.com/stocks/detail/0941.HK/" target="_blank">Quelle: Digrin</a>
+        <br><span class="action-tag halten">Halten</span> — stabil/defensiv, aber FCC-Risiko im Blick behalten<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      </div>
+    </details>
+  </aside>
+
+  </div>
+  <!-- /portfolio-layout -->
+  </div>
+  <!-- /portfolio tab -->
+
+  <!-- ============ NADEL & ZWIRN TAB ============ -->
+  <div id="nadelzwirn" class="tab-panel">
+
+    <section>
+      <div class="countdown-box">
+        <div>
+          <div class="cd-label pixel-font">Start des Nebengewerbes</div>
+          <div class="char-title pixel-font" style="margin-top:6px;">Nadel &amp; Zwirn e.U.</div>
+          <div class="char-sub" style="margin-top:8px; font-family:system-ui;">Klagenfurt, Kärnten — Solo-Stickerei-Startup, Inhaber/Gründer: Raphi</div>
+        </div>
+        <div style="text-align:center;">
+          <div class="cd-number pixel-font">164</div>
+          <div class="cd-label pixel-font" style="margin-top:6px;">Tage bis 01.01.2027</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Kennzahlen</h2>
+      <div class="stat-row">
+        <div class="stat-tile">
+          <div class="label">Einmalige Investition</div>
+          <div class="value">5.000 €</div>
+          <div class="sub">Stickmaschine 4.000 € + Kappen-Rahmen 1.000 €</div>
+        </div>
+        <div class="stat-tile">
+          <div class="label">Fixkosten pro Monat</div>
+          <div class="value">186,11 €</div>
+          <div class="sub">Bekannter Teil — vermutlich unvollständig</div>
+        </div>
+        <div class="stat-tile">
+          <div class="label">Amortisation</div>
+          <div class="value good">16–19 Mon.</div>
+          <div class="sub">Aus Projekt-Memory, Rechengrundlage nicht vollständig im Vault</div>
+        </div>
+        <div class="stat-tile">
+          <div class="label">Kundenakquise-Liste</div>
+          <div class="value">272</div>
+          <div class="sub">Firmeneinträge, Raum Klagenfurt</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Ausstattung</h2>
+      <div class="rec-grid">
+        <div class="rec-card">
+          <span class="rec-tag">Vorhanden</span>
+          <h3>Happy V2</h3>
+          <p>Einzelkopf-Stickmaschine, 12 Nadeln. Garn ausschließlich Madeira Polyneon NE 40 — kein anderer Garn-Standard in kundenseitigen Materialien.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-tag spekulativ">Geplant / zu klären</span>
+          <h3>Happy HSC2 (Mehrkopf)</h3>
+          <p>12 Nadeln, automatischer Farbwechsel — beste Variante laut Excel, aber ohne Stickrahmen für Kappen (Zusatzkosten ca. 1.000 €). Unklar, ob 4.000 € Neuanschaffung oder die bereits vorhandene Happy V2 meint.</p>
+        </div>
+      </div>
+      <div class="warn-box" style="margin-top:14px;">
+        <b>Zu klären:</b> Die 4.000 € "Stickmaschine Einkauf" im Excel-Blatt ist nicht eindeutig — Neuanschaffung Happy HSC2 oder Bewertung der vorhandenen Happy V2? Wichtig für die Budgetplanung.
+      </div>
+    </section>
+
+    <section>
+      <h2>Interaktiver Stickpreis-Kalkulator</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">Grundpreis je Stickgröße bleibt fix. Die Staffelrabatte laut Preisliste werden automatisch angewendet, sodass der VK pro Stück mit steigender Abnahmemenge fällt. Gewinn und Marge werden je Staffel nach Wareneinsatz berechnet.</p>
+      <div class="chart-card calc-card">
+        <div class="calc-grid">
+          <label>Kategorie
+            <select id="calc-kategorie" onchange="calcUpdateSize()">
+              <option value="textil">Textilien</option>
+              <option value="kappe">Kappen/Mützen</option>
+            </select>
+          </label>
+          <label>Stickgröße
+            <select id="calc-groesse" onchange="calcApplyPreset()"></select>
+          </label>
+          <label>Grundpreis netto je Stück (€)<span class="calc-hint">1 Stück, ohne Rabatt</span>
+            <input type="number" id="calc-vk" value="4.50" min="0" step="0.01" oninput="calcRun()">
+          </label>
+          <label>Wareneinsatz je Stück (€)<span class="calc-hint">manuell, da Excel-Zelle P6 leer ist</span>
+            <input type="number" id="calc-material" value="0" min="0" step="0.01" oninput="calcRun()">
+          </label>
+          <label>Fixkosten-Umlage: geschätzte Stück/Monat<span class="calc-hint">0 = keine Umlage einrechnen</span>
+            <input type="number" id="calc-stueck-monat" value="0" min="0" step="1" oninput="calcRun()">
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table class="pos-table">
+            <thead>
+              <tr><th>Abnahme</th><th class="num">Rabatt</th><th class="num">VK / Stück</th><th class="num">Wareneinsatz</th><th class="num">Fixkosten</th><th class="num">Gewinn / Stück</th><th class="num">Marge</th><th class="num">Gewinn gesamt</th></tr>
+            </thead>
+            <tbody id="calc-staffel-body"></tbody>
+          </table>
+        </div>
+        <div class="char-sub" style="margin-top:12px;">Wareneinsatz ist eine manuelle Eingabe, da die Materialkosten-Formel im Excel-Sheet auf die leere Zelle P6 verweist und damit real nicht nutzbar ist. Fixkosten-Umlage optional: geschätzte Stückzahl/Monat eintragen, um die 186,11 €/Monat Fixkosten anteilig auf den Gewinn pro Stück anzurechnen. Rabattstaffel laut Preisliste: ab 10 Stück −3%, ab 25 −8%, ab 50 −12%, ab 100 −16%, ab 250 −20%.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Preiskalkulation &amp; Rabattstaffel</h2>
+
+      <div class="warn-box">
+        <b>Preisleiter neu aufgebaut:</b> Anker ist der reale GALVI-Preis für Größe S (3,60 €). Darauf aufbauend wurden alle Größen zu einer gleichmäßig steigenden Leiter angeglichen, statt der willkürlichen Sprünge aus dem alten Excel (z.B. 3,60 € direkt auf 15,50 €). Textilien: XS 2,50 / S 3,60 / M 5,50 / L 8,50 / XL 12,50 €. Kappen: S 3,60 / M 5,50 / L 8,00 €. Nur S ist ein bestätigter Marktwert, die übrigen Stufen sind daraus abgeleitete, plausible Richtwerte und vor Verkaufsstart noch mit realen Vergleichspreisen zu prüfen.
+      </div>
+
+      <div class="gap-box">
+        <b>Reale Lücke im Kalkulationsmodell:</b> Die Materialkosten-Formel im Excel-Sheet verweist auf eine leere Zelle (P6). Dadurch werden Materialkosten überall als 0 € berechnet — die Deckungsbeiträge entsprechen aktuell den vollen Verkaufspreisen, was zu hoch ist. Vor dem Start unbedingt Zelle P6 befüllen, sonst kalkulierst du mit falschen Margen.
+      </div>
+
+      <div class="chart-card" style="margin-top:16px;">
+        <p class="chart-sub">Original-Excel: einziges hinterlegtes Beispiel (XS Stick, bei Stückzahl)</p>
+        <div class="rank-bar-row"><span class="name">10 Stück</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:100%; background:var(--series-aqua);"></div></div><span class="val">4,27 €</span></div>
+        <div class="rank-bar-row"><span class="name">25 Stück</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:92.7%; background:var(--series-aqua);"></div></div><span class="val">3,96 €</span></div>
+        <div class="rank-bar-row"><span class="name">50 Stück</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:86.4%; background:var(--series-aqua);"></div></div><span class="val">3,69 €</span></div>
+        <div class="rank-bar-row"><span class="name">100 Stück</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:82.2%; background:var(--series-aqua);"></div></div><span class="val">3,51 €</span></div>
+        <div class="rank-bar-row"><span class="name">250 Stück</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:75.9%; background:var(--series-aqua);"></div></div><span class="val">3,24 €</span></div>
+        <div class="char-sub" style="margin-top:10px;">Dieses Beispiel folgt nicht exakt dem −3/−8/−12/−16/−20%-Ziel (reale Prozentsätze liegen zwischen −5% und −28%) — im Original-Excel für die anderen Größen so nicht hinterlegt.</div>
+      </div>
+
+      <div class="chart-card" style="margin-top:16px;">
+        <p class="chart-sub">Rabattstaffel für alle Stickgrößen — berechnet nach Ziel-Modell (−3/−8/−12/−16/−20%)</p>
+        <div class="char-sub" style="margin-bottom:10px;">Nicht 1:1 aus dem Excel-Sheet, sondern aus dem Verkaufspreis je Größe nach dem im Projekt-Memory festgelegten Rabattstaffel-Ziel berechnet. Vor Verkaufsstart im Excel real anzugleichen (siehe Offene Punkte).</div>
+        <h3 style="margin-top:6px;">Textilien</h3>
+        <table class="pos-table">
+          <thead><tr><th>Größe</th><th class="num">1 Stk</th><th class="num">10 Stk (−3%)</th><th class="num">25 Stk (−8%)</th><th class="num">50 Stk (−12%)</th><th class="num">100 Stk (−16%)</th><th class="num">250 Stk (−20%)</th></tr></thead>
+          <tbody>
+            <tr><td>XS (3x3cm)</td><td class="num">2,50 €</td><td class="num">2,43 €</td><td class="num">2,30 €</td><td class="num">2,20 €</td><td class="num">2,10 €</td><td class="num">2,00 €</td></tr>
+            <tr><td>S (6x6cm)</td><td class="num">3,60 €</td><td class="num">3,49 €</td><td class="num">3,31 €</td><td class="num">3,17 €</td><td class="num">3,02 €</td><td class="num">2,88 €</td></tr>
+            <tr><td>M (12x12cm)</td><td class="num">5,50 €</td><td class="num">5,34 €</td><td class="num">5,06 €</td><td class="num">4,84 €</td><td class="num">4,62 €</td><td class="num">4,40 €</td></tr>
+            <tr><td>L (20x20cm)</td><td class="num">8,50 €</td><td class="num">8,25 €</td><td class="num">7,82 €</td><td class="num">7,48 €</td><td class="num">7,14 €</td><td class="num">6,80 €</td></tr>
+            <tr><td>XL (größte Stufe)</td><td class="num">12,50 €</td><td class="num">12,13 €</td><td class="num">11,50 €</td><td class="num">11,00 €</td><td class="num">10,50 €</td><td class="num">10,00 €</td></tr>
+          </tbody>
+        </table>
+        <h3 style="margin-top:18px;">Kappen/Mützen</h3>
+        <table class="pos-table">
+          <thead><tr><th>Größe</th><th class="num">1 Stk</th><th class="num">10 Stk (−3%)</th><th class="num">25 Stk (−8%)</th><th class="num">50 Stk (−12%)</th><th class="num">100 Stk (−16%)</th><th class="num">250 Stk (−20%)</th></tr></thead>
+          <tbody>
+            <tr><td>S (5x5cm)</td><td class="num">3,60 €</td><td class="num">3,49 €</td><td class="num">3,31 €</td><td class="num">3,17 €</td><td class="num">3,02 €</td><td class="num">2,88 €</td></tr>
+            <tr><td>M (9x9cm)</td><td class="num">5,50 €</td><td class="num">5,34 €</td><td class="num">5,06 €</td><td class="num">4,84 €</td><td class="num">4,62 €</td><td class="num">4,40 €</td></tr>
+            <tr><td>L (12x12cm)</td><td class="num">8,00 €</td><td class="num">7,76 €</td><td class="num">7,36 €</td><td class="num">7,04 €</td><td class="num">6,72 €</td><td class="num">6,40 €</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Fixkosten-Aufschlüsselung</h2>
+      <div class="chart-row">
+        <div class="chart-card">
+          <h3>Monatliche Fixkosten (186,11 €)</h3>
+          <div class="donut-row">
+            <div class="donut" style="background: conic-gradient(var(--series-blue) 0% 59.7%, var(--series-yellow) 59.7% 81.2%, var(--series-aqua) 81.2% 100%);"></div>
+            <div class="donut-legend">
+              <span><span class="dot" style="background:var(--series-blue)"></span>Maschinenabschreibung<span class="pct">111,11 €</span></span>
+              <span><span class="dot" style="background:var(--series-yellow)"></span>Unbenannte Position*<span class="pct">40,00 €</span></span>
+              <span><span class="dot" style="background:var(--series-aqua)"></span>Website-Abo<span class="pct">35,00 €</span></span>
+            </div>
+          </div>
+          <div class="char-sub" style="margin-top:10px;">*Im Original-Excel ohne Label, vermutlich Strom laut Projekt-Memory, aber im Sheet nicht so benannt.</div>
+        </div>
+        <div class="chart-card">
+          <h3>Was fehlt für eine vollständige Budgetplanung</h3>
+          <ul class="quick-list">
+            <li>Gewerbeanmeldung e.U. (Anmeldegebühr, WK-Grundumlage)</li>
+            <li>SVS-Pflichtversicherung (monatlich/jährlich)</li>
+            <li>Shopify Basic Plan — monatliche Kosten unbekannt</li>
+            <li>Steuerberater/Buchhaltung, falls genutzt</li>
+            <li>Grundmaterial: Stoffe/Kappen/Textilien, Nadeln, Stabilizer/Vlies</li>
+            <li>Marketing-/Werbebudget</li>
+            <li>Reparatur-/Wartungsrücklage für die Maschine</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tools &amp; Bezugsquellen</h2>
+      <div class="chart-row">
+        <div class="chart-card">
+          <h3>Einkauf Stickgarn</h3>
+          <ul class="quick-list">
+            <li>naehplatz.de — Madeira Polyneon 40, 1000m</li>
+            <li>Willhaben — SULKY 40, 5000m, nur Spezialfarben (z.B. Burgundy)</li>
+            <li>Grundfarben separat, nicht über SULKY</li>
+          </ul>
+        </div>
+        <div class="chart-card">
+          <h3>Maschinenmarktplätze &amp; Sonstiges</h3>
+          <ul class="quick-list">
+            <li>Willhaben, Kleinanzeigen.de, Exapro — Maschinenmarkt</li>
+            <li>eBay/Willhaben Händler: MOSKITO, MIAMO</li>
+            <li>Shopify-Store: nadelundzwirn.myshopify.com, Theme "Savor", Basic Plan</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ TRAINING TAB ============ -->
+  <div id="training" class="tab-panel">
+    <section>
+      <h2>Trainingsplan</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">Trainingstage und Übungen frei anlegen, Sätze mit Gewicht und Wiederholungen protokollieren. Alles wird lokal gespeichert und baut sich über Zeit zu echten Fortschrittsdaten auf.</p>
+
+      <div class="chart-card" style="margin-bottom:20px;">
+        <div class="train-add-row">
+          <input type="text" id="train-new-day-name" placeholder="Neuer Trainingstag, z.B. Lower Body" style="flex:1; min-width:200px;">
+          <button type="button" class="train-small-btn primary" onclick="addTrainingDay()">Trainingstag anlegen</button>
+        </div>
+      </div>
+
+      <div id="training-days-list"></div>
+    </section>
+  </div>
+
+  <!-- ============ WELTNEWS TAB ============ -->
+  <div id="weltnews" class="tab-panel">
+    <section>
+      <h2>Weltnews — Geopolitik &amp; KI</h2>
+      <div class="news-refresh-note">
+        <b>Auto-Check bei jeder Session:</b> Claudian prüft bei jedem Gesprächsstart das "Stand:"-Datum und aktualisiert automatisch, wenn es älter als 1 Tag ist (siehe CLAUDE.md). Kein echter Hintergrundprozess, der Trigger ist der erste Prompt jeder neuen Unterhaltung, nicht das Öffnen von Obsidian selbst.
+      </div>
+
+      <div class="news-list">
+
+        <div class="news-item">
+          <span class="tag geopolitik">Geopolitik</span>
+          <div class="outlet">Times of Israel / CSIS</div>
+          <h4><a href="https://www.timesofisrael.com/liveblog-july-26-2026/" target="_blank">Iran-Krieg weitet sich aus: Netanyahu reist zu Trump, Gewalt eskaliert im Westjordanland</a></h4>
+          <p>Der seit Ende Februar 2026 laufende Iran-Krieg (ausgelöst von USA und Israel) hat sich über die Straße von Hormus hinaus ausgeweitet und bedroht zunehmend Golf-Infrastruktur und die globale Energiesicherheit. Netanyahu trifft Trump kommenden Dienstag im Weißen Haus. Parallel eskaliert die Lage im Westjordanland: Siedler haben zwei Moscheen in Brand gesteckt, "Rache"-Graffiti hinterlassen, nachdem zuvor vier Palästinenser und ein Israeli bei einer Schießerei getötet wurden.</p>
+          <details>
+            <summary>Ganzen Artikel anzeigen</summary>
+            <div class="article-body">
+              <p>Der im Februar 2026 von den USA und Israel begonnene Krieg gegen den Iran hat die Machtverhältnisse im Nahen Osten durcheinandergebracht. Der Auftakt traf mit der Tötung von Obersten Führer Ali Khamenei ins Herz des iranischen Regimes und löste eine Welle Hunderter Vergeltungsraketen und Tausender Drohnen aus, die der Iran über die Region abfeuerte.</p>
+              <p>Nach einem im Juni 2026 vereinbarten Memorandum, das den Krieg beenden sollte, hat der Iran wiederholt Schiffe in der Straße von Hormus bedroht und angegriffen. Nach Angriffen auf drei Schiffe am 6. und 7. Juli verstärkten die USA ihre Angriffe auf iranische Ziele; Präsident Trump erklärte daraufhin, die Waffenruhe für beendet zu betrachten.</p>
+              <p>Israels Ministerpräsident Benjamin Netanyahu reist kommende Woche in die USA. Sein Büro bestätigte ein Treffen mit Trump im Weißen Haus am kommenden Dienstag, nach zwei Wochen täglicher US-Angriffe auf den Iran. Trump drohte zudem, für jedes iranische Schiff, das in der Straße von Hormus angegriffen wird, Brücken und Kraftwerke im Iran zu bombardieren.</p>
+              <p>Die eskalierenden US-Iran-Angriffe weiten sich über die Straße von Hormus hinaus aus und bedrohen zunehmend die Golf-Infrastruktur, die regionale Stabilität und die globale Energiesicherheit — direkt relevant für Energiewerte wie Siemens Energy im Portfolio.</p>
+              <p>Parallel eskaliert die Lage im Westjordanland: Siedler haben zwei Moscheen in Brand gesteckt und "Rache"-Graffiti hinterlassen, zwei Tage nach einer tödlichen Schießerei, bei der vier Palästinenser und ein Israeli getötet wurden.</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="news-item">
+          <span class="tag geopolitik">Geopolitik</span>
+          <div class="outlet">Democracy Now</div>
+          <h4><a href="https://www.democracynow.org/2026/7/24/headlines" target="_blank">US-Iran-Konflikt eskaliert: 13. Nacht in Folge mit US-Angriffen, Iran lehnt Waffenruhe ab</a></h4>
+          <p>Das US-Militär hat in der Nacht zum 24.07. die 13. Angriffsserie in Folge gegen den Iran geflogen. Der Iran wies einen Waffenstillstandsvorschlag von US-Präsident Trump zurück und beschoss seinerseits US-Militärziele in Bahrain, Kuwait und Jordanien. Direkt relevant für Energiepreise und Weltmärkte (Straße von Hormus).</p>
+          <details>
+            <summary>Ganzen Artikel anzeigen</summary>
+            <div class="article-body">
+              <p>Das US-Militär hat in der Nacht zum 24. Juli 2026 die jüngste Angriffsrunde gegen den Iran abgeschlossen und damit die 13. Nacht in Folge mit Luftschlägen markiert. Nach Angaben iranischer Staatsmedien trafen US-Raketen mehrere Ziele rund um die Hauptstadt der ölreichen Provinz Chuzestan.</p>
+              <p>Der Iran reagierte am Morgen mit Angriffen auf US-Militärziele in Bahrain, Kuwait und Jordanien. Iranische und irakische Vertreter erklärten zudem, der Iran habe einen von US-Präsident Donald Trump vorgelegten Waffenstillstandsvorschlag abgelehnt.</p>
+              <p>Die anhaltende Eskalation im Golf hält die Sorge um die Straße von Hormus hoch, durch die ein erheblicher Teil des weltweiten Öltransports läuft. Für Anleger*innen bleibt das Umfeld für Energiewerte (u.a. Siemens Energy im Portfolio) und den breiten Markt dadurch volatil.</p>
+              <p>Parallel meldete die Region weitere Spannungen: Die philippinische Küstenwache warf der chinesischen Seite vor, zum zweiten Tag in Folge Wasserwerfer gegen Regierungsschiffe nahe einer umstrittenen Untiefe im Südchinesischen Meer eingesetzt zu haben, die dritte Konfrontation beider Länder in dieser Woche.</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="news-item">
+          <span class="tag ki">KI</span>
+          <div class="outlet">Al Jazeera</div>
+          <h4><a href="https://www.aljazeera.com/economy/2026/7/1/us-lifts-restrictions-on-powerful-ai-models-fable-mythos-anthropic-says" target="_blank">USA heben Beschränkungen für Anthropics KI-Modelle Fable und Mythos auf</a></h4>
+          <p>Die US-Regierung hat die Exportbeschränkungen für Anthropics leistungsstärkste Modelle Fable 5 und Mythos 5 aufgehoben, nachdem das Unternehmen sich verpflichtet hat, Sicherheitsrisiken proaktiv zu melden. Relevant, da du selbst mit Claude arbeitest.</p>
+          <details>
+            <summary>Ganzen Artikel anzeigen</summary>
+            <div class="article-body">
+              <p class="article-caption">Anthropics Ankündigung kam kurz nachdem US-Handelsminister Howard Lutnick erklärt hatte, sein Ministerium habe sich mit dem Unternehmen über die Freigabe seiner Spitzenmodelle abgestimmt (Dado Ruvic/Illustration/Reuters)</p>
+              <p>Die US-Regierung hat die Beschränkungen für den ausländischen Zugang zu Anthropics leistungsstärksten KI-Modellen aufgehoben, wie das Unternehmen mitteilte.</p>
+              <p>Anthropic erklärte am späten Dienstag, ab dem folgenden Tag den Zugang zu Claude Fable 5 und Mythos 5 wiederherzustellen, nachdem das US-Handelsministerium das Unternehmen informiert hatte, die Exportkontrollen aufgehoben zu haben.</p>
+              <p>„Wir sind unseren Nutzer*innen für ihre Geduld dankbar, und allen, die mit uns an der erneuten Bereitstellung der Modelle gearbeitet haben", erklärte Anthropic in einer Stellungnahme auf X.</p>
+              <p>In einem Brief an Anthropic, der online breit geteilt wurde, schrieb Handelsminister Howard Lutnick, das Unternehmen benötige keine Exportlizenz mehr, da es zugesagt habe, Sicherheitsrisiken im Zusammenhang mit den Modellen proaktiv zu erkennen und zu beheben, mit der Regierung an Standards für kommende Modelle zu arbeiten und die Regierung über „böswillige Aktivitäten" zu informieren.</p>
+              <p>Anthropic hatte Claude Fable 5 und Mythos 5 im Vormonat abrupt abgeschaltet, nachdem die Regierung von US-Präsident Donald Trump das Unternehmen angewiesen hatte, allen ausländischen Staatsangehörigen, einschließlich eigener Mitarbeiter*innen, den Zugang zu den Modellen zu verwehren.</p>
+              <p>Anthropic erklärte damals, die Regierung habe keinen konkreten Grund über unspezifizierte Bedenken der nationalen Sicherheit hinaus genannt, gehe aber davon aus, dass Sicherheitslücken in Fable 5 der Auslöser gewesen seien.</p>
+              <p>Am Freitag hatte das in San Francisco ansässige Unternehmen mitgeteilt, die Genehmigung erhalten zu haben, die Modelle US-Organisationen bereitzustellen, die „kritische Infrastruktur betreiben und schützen", und arbeite mit der Regierung daran, den allgemeinen Zugang für die Öffentlichkeit wiederherzustellen.</p>
+              <p>Die Beschränkungen waren die jüngste Spannungsquelle im angespannten Verhältnis zwischen Anthropic und der Trump-Regierung. Im März hatte Anthropic das Verteidigungsministerium verklagt, nachdem das Pentagon das Unternehmen als „Lieferkettenrisiko" eingestuft hatte, weil es sich weigerte, ohne ausdrückliche Zusicherungen mit dem US-Militär zusammenzuarbeiten, dass seine KI-Tools nicht für Massenüberwachung oder autonome Waffen eingesetzt würden.</p>
+              <p>Während Trump seine zweite Amtszeit mit einem Laissez-faire-Ansatz gegenüber KI-Regulierung begann, hat seine Regierung die Aufsicht über die Technologie zuletzt verschärft. OpenAI, der Entwickler von ChatGPT, kündigte vergangene Woche an, seine neueste Modellreihe GPT-5.6 zunächst nur einer „kleinen Gruppe vertrauenswürdiger Partner" zur Verfügung zu stellen, nachdem die US-Regierung auf eine gestaffelte Veröffentlichung gedrängt hatte.</p>
+              <p>Francesco Bailo, stellvertretender Direktor des AI, Trust and Governance Centre an der University of Sydney, sagte, die Aufhebung der Beschränkungen sei in Tech-Kreisen erwartet worden, da Berichte über erfolgreiche „Jailbreaks" von Fable 5 weit über ihre tatsächliche Bedeutung hinaus aufgebauscht worden seien. „Die US-Regierung hat wahrscheinlich erkannt, dass sie überreagiert hatte, und dass ihre Entscheidung einen gefährlichen, unübersichtlichen Präzedenzfall für Regulierung schaffen und heftigen Widerstand einer Branche hervorrufen würde, die stark in die enge Kommunikation mit der Trump-Regierung investiert hat", sagte Bailo gegenüber Al Jazeera. „Es war auch klar, dass, wenn Fable und Mythos aus diesen Gründen blockiert würden, auch Konkurrenzmodelle blockiert werden müssten."</p>
+              <p>Tanishq Abraham, ehemaliger Forschungsdirektor bei Stability AI und heute Leiter des medizinischen KI-Unternehmens Sophont, bezeichnete den jüngsten Schritt der Trump-Regierung als „großen Schritt", der wichtige Fragen dazu aufwerfe, wie Frontier-Labore mit der US-Regierung interagieren sollten. „Die größte Frage ist jetzt: Welchen Präzedenzfall setzt das für die Branche? Muss die US-Regierung jede Veröffentlichung eines Frontier-Modells genehmigen?", so Abraham. „Wir sehen das bereits bei der GPT-5.6-Veröffentlichung."</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="news-item">
+          <span class="tag ki">KI</span>
+          <div class="outlet">MIT Technology Review</div>
+          <h4><a href="https://www.technologyreview.com/2026/06/29/1139849/ai-agents-are-not-your-coworkers/" target="_blank">KI-Agenten sind nicht deine "Kolleg*innen"</a></h4>
+          <p>Eine Studie zeigt: Wenn KI-Agenten als "Mitarbeitende" statt als Software-Tool dargestellt werden, übersehen Menschen 18% mehr Fehler und schieben Verantwortung eher ab. Passt zum Trend autonomer KI-Agenten als prägendster KI-Entwicklung 2026.</p>
+          <details>
+            <summary>Ganzen Artikel anzeigen</summary>
+            <div class="article-body">
+              <p>KI-Agenten als „digitale Mitarbeitende" zu vermarkten, könnte Menschen schlechter darin machen, Fehler zu erkennen, und dazu führen, dass sie Verantwortung eher abgeben.</p>
+              <p>Stell dir vor, du kommst zur Arbeit und erfährst, dass dir ab sofort ein neuer Untergebener unterstellt ist. Der Mitarbeitende ist keine Person, sondern ein KI-Tool, das dein Unternehmen dennoch Alex nennt, ein „Mitarbeiter" mit Titel und definierten Zuständigkeiten. Wie gut, glaubst du, würdest du mit Alex zusammenarbeiten?</p>
+              <p>Wenn du wie die Führungskräfte bist, die kürzlich von Emma Wiles, Wirtschaftsprofessorin an der Boston University, untersucht wurden, würde die Behandlung von Alex als „Kollege" statt als Software-Tool zu schlechterer Arbeit führen. Wiles fand heraus, dass Menschen 18% weniger Fehler entdeckten, wenn die Arbeit angeblich von einem agentischen „KI-Mitarbeiter" statt von einem Chatbot stammte. Es zeigt sich: Der Name macht einen großen Unterschied.</p>
+              <p>Das ist ein alarmierender Ausblick auf die Zukunft, in die uns das Silicon Valley treibt. Letztes Jahr sprach Nvidia-CEO Jensen Huang von Arbeitsplätzen mit „digitalen Menschen". Seit April haben Microsoft, OpenAI, Anthropic und Google alle neue Tools zur Verwaltung von KI-Agenten-Teams veröffentlicht, viele davon ausdrücklich als digitale Kolleg*innen mit der Flexibilität und kognitiven Kraft echter Menschen beworben. Fast ein Drittel der 1.261 Führungskräfte, die an Wiles' Studie teilnahmen, gaben an, ihre Unternehmen würden KI-Agenten bereits als Mitarbeitende darstellen (23% listen sie sogar in Organigrammen).</p>
+              <p>Der technische Fortschritt agentischer KI ist nicht nur heiße Luft. Agenten, die man sich als KI-Tools vorstellen kann, die in einer Schleife arbeiten, bis sie ein Ziel erreichen, sind messbar besser bei komplizierteren Aufgaben geworden. Aber es ist ein großer Sprung, diese Tools als Kolleg*innen oder Mitarbeitende zu bezeichnen, und das weckt unrealistische Erwartungen daran, was KI leisten kann, während es die dafür verantwortlichen menschlichen Mitarbeitenden schlechter dastehen lässt.</p>
+              <p>Das liegt teilweise daran, dass es laut Wiles' Forschung unser Gefühl dafür umkehrt, wer verantwortlich ist. Wenn ein KI-Tool als Mitarbeiter dargestellt wurde, fühlten sich die Studienteilnehmenden weniger verantwortlich für dessen Ergebnisse. Sie waren auch 44% eher bereit, fragwürdige Arbeit zur weiteren Prüfung an eine Führungskraft weiterzuleiten, statt ihren eigenen Korrekturen zu vertrauen, was den zeitsparenden Zweck der Nutzung des KI-Agenten von vornherein zunichtemacht.</p>
+              <p>Das geht weit über Bürokultur hinaus: Da KI-Agenten zunehmend in Gesundheitswesen, Militär, Bildung und Regierung eingebettet werden, wächst das Risiko, dass sie zu einem bequemen Sündenbock für Fehler werden, die eigentlich das Ergebnis schlechter menschlicher Entscheidungen, Anreize und Aufsicht sind.</p>
+              <p>„KI-Agenten werden derzeit als etwas vermarktet, das Menschen ersetzen kann, und ich halte das für eine Sackgasse", sagt Daron Acemoglu, Ökonom am MIT und Nobelpreisträger 2024, der die Auswirkungen von KI auf die Wirtschaft erforscht. „Sie sollten stattdessen so optimiert werden, dass sie menschliche Fähigkeiten verbessern, was aktuell nicht der Fall ist."</p>
+              <p>Ein neues Projekt an der Stanford University zeigt eine Alternative: Forschende legten 1.500 Beschäftigten in 104 Berufen dar, welche Aufgaben KI potenziell übernehmen könnte, und fragten dann, was tatsächlich am hilfreichsten und produktivsten wäre. Die Beschäftigten wollten in bestimmten Bereichen durchaus Automatisierung, aber oft waren gerade die Aufgaben, die Tech-Expert*innen als am besten für KI geeignet einschätzten, jene, die die Beschäftigten selbst definitiv nicht von einem Agenten übernommen haben wollten.</p>
+              <p>Alex als Mitarbeiter zu bezeichnen ist einfach, und bequem, besonders wenn etwas schiefgeht, aber es ist eine reine Marketing-Übung. Es macht das Tool nicht besser geeignet für die Aufgabe, und es macht die Menschen drumherum schlechter in ihrer.</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="news-item">
+          <span class="tag ki">KI</span>
+          <div class="outlet">Technology.org</div>
+          <h4><a href="https://www.technology.org/2026/07/17/eu-ai-act-what-actually-applies-on-2-august-2026/" target="_blank">EU AI Act: Was ab 2. August 2026 tatsächlich gilt</a></h4>
+          <p>Ab 2. August 2026 werden Transparenzpflichten des EU AI Acts verbindlich (Chatbot-Kennzeichnung, KI-generierte Inhalte, Deepfakes). Die strengeren Hochrisiko-Pflichten wurden dagegen um 17 Monate auf Dezember 2027 verschoben. Potenziell relevant für GALVI und Nadel &amp; Zwirn, sobald KI-Tools im Geschäftsbetrieb eingesetzt werden.</p>
+          <details>
+            <summary>Ganzen Artikel anzeigen</summary>
+            <div class="article-body">
+              <h5>Wichtigste Punkte</h5>
+              <ul>
+                <li>Transparenzpflichten nach Artikel 50 werden am 2. August 2026 durchsetzbar: Chatbot-Offenlegung, Kennzeichnung synthetischer Inhalte, Deepfake-Kennzeichnung.</li>
+                <li>Hochrisiko-Pflichten kommen nicht wie geplant: Eigenständige Annex-III-Systeme haben jetzt bis 2. Dezember 2027 Zeit, in Annex-I-Produkte eingebettete KI bis 2. August 2028.</li>
+                <li>Die Änderung kam durch den "Digital Omnibus on AI", unterzeichnet am 8. Juli 2026.</li>
+                <li>Ein neues Verbot für nicht-einvernehmliche intime KI-generierte Bilder wurde zu Artikel 5 hinzugefügt.</li>
+                <li>Das AI Office erhielt erweiterte Aufsichtsbefugnisse über vertikal integrierte KI-Anbieter.</li>
+              </ul>
+              <h5>Zwei Geschwindigkeiten, eine Deadline</h5>
+              <p>Zwei Jahre lang stand der 2. August 2026 als das Datum fest, an dem der EU AI Act substanziell anwendbar werden würde. Das ist nicht mehr das, was passiert. Die Frist kommt weiterhin, aber mit deutlich weniger Inhalt als geplant. Ein spätes Änderungspaket, bekannt als "Digital Omnibus on AI", hat den Kalender in zwei Geschwindigkeiten aufgeteilt: Transparenzregeln greifen fristgerecht, während das schwerere Hochrisiko-Regime um mehr als ein Jahr in die Zukunft verschoben wird.</p>
+              <h5>Was im August greift</h5>
+              <p>Artikel 50 ist der Teil, der die Umstrukturierung intakt übersteht. Seine allgemeinen Transparenzanforderungen gelten ab 2. August 2026 für jedes KI-System, das auf dem EU-Markt platziert wird. Systeme, die direkt mit Menschen interagieren, müssen klarmachen, dass eine Person mit einer Maschine zu tun hat, es sei denn, das ist aus dem Kontext offensichtlich. Deepfakes und manipulierte Audio-, Bild- oder Videoinhalte müssen als künstlich generiert offengelegt werden.</p>
+              <h5>Was sich verschoben hat</h5>
+              <p>Eigenständige Systeme in Annex III (Rekrutierungstools, Kreditwürdigkeitsprüfung, Bildung, Strafverfolgung, Grenzkontrolle, kritische Infrastruktur) haben nun bis 2. Dezember 2027 volle Compliance-Zeit statt bis 2. August 2026, eine Verlängerung um siebzehn Monate. Der Grund für die Verschiebung ist prozedural: Mitgliedstaaten waren langsam bei der Benennung nationaler zuständiger Behörden, und die harmonisierten Standards waren noch nicht fertig.</p>
+              <h5>Was in der Praxis zählt</h5>
+              <p>Für Unternehmen, die Chatbots, generative Medientools oder synthetische Content-Pipelines in der EU einsetzen, ist der August real und nah. Offenlegung und Kennzeichnung sind technische Arbeit. Für Unternehmen, die Rekrutierungs-Screening, Kreditwürdigkeitsprüfung oder biometrische Systeme bauen, hat sich der Druck spürbar gelockert, aber das Dezember-2027-Datum setzt voraus, dass Standards rechtzeitig fertig werden.</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="news-item">
+          <span class="tag geopolitik">Geopolitik</span>
+          <div class="outlet">PYMNTS</div>
+          <h4><a href="https://www.pymnts.com/news/cross-border-commerce/cross-border-payments/2026/china-takes-on-swift-with-new-cross-border-payment-system/" target="_blank">China fordert SWIFT mit neuem grenzüberschreitendem Zahlungssystem heraus</a></h4>
+          <p>China bereitet mit "mBridge" (unterstützt von China, Hongkong, Saudi-Arabien, Thailand und den VAE) ein alternatives Cross-Border-Zahlungssystem vor, günstiger als SWIFT. Parallel dazu ist Libyen kürzlich Chinas eigenem CIPS-Zahlungssystem beigetreten, um die Dollar-Abhängigkeit zu reduzieren, Teil desselben De-Dollarisierungstrends, der auch in deiner Portfolio-Recherche zur Deglobalisierung eine Rolle spielte.</p>
+          <details>
+            <summary>Ganzen Artikel anzeigen</summary>
+            <div class="article-body">
+              <p>China bereitet Berichten zufolge den kommerziellen Start eines auf Digitalwährung ausgerichteten grenzüberschreitenden Zahlungsprogramms vor.</p>
+              <p>Die neue Plattform namens „mBridge" wird von den Zentralbanken Chinas, Hongkongs, Saudi-Arabiens, Thailands und der Vereinigten Arabischen Emirate unterstützt, berichtete die Financial Times unter Berufung auf mit der Sache vertraute Quellen.</p>
+              <p>Zwar ist unklar, wann das System starten wird, doch laut den Quellen befinden sich die Vorbereitungen in einem fortgeschrittenen Stadium, und die Gebühren für die Nutzung des Dienstes sollen halb so hoch sein wie bei Standard-Zahlungssystemen. mBridge dürfte vor allem kleinere Unternehmen ansprechen, denen Systeme wie SWIFT zu teuer und umständlich sind.</p>
+              <p>Die FT stellte fest, dass dies zu einer Zeit geschieht, in der auch andere regionale Zahlungssysteme neuen Schwung gewinnen, etwa das SEPA-System der Europäischen Zentralbank und das grenzüberschreitende QR-Code-Netzwerk der Ant Group, die schnellere und günstigere Transaktionen anstreben, besonders für kleinere Echtzeitzahlungen von Reisenden.</p>
+              <p>„Im Hintergrund läuft leise ein Wettrüsten alternativer Finanzsysteme", sagte Tom Keatinge, Gründungsdirektor des Centre for Finance and Security am britischen RUSI, mit Verweis auf die Umarmung von Stablecoins durch das Weiße Haus. China wolle mit Systemen wie mBridge seiner digitalen Währung e-CNY eine größere Rolle im globalen Finanzwesen verschaffen. „Man könnte es eine digitale Währungs-Seidenstraße nennen, es überrascht daher nicht, dass China das weiterverfolgt", so Keatinge.</p>
+              <p>Die „globale Zahlungslandschaft", einst von SWIFT dominiert, zersplittert in ein „System konkurrierender Netzwerke, in dem mBridge eines von mehreren sein wird", sagte Gene Ma, Leiter der China-Forschung am Institute of International Finance, gegenüber der FT.</p>
+              <p>In weiteren Nachrichten zu grenzüberschreitenden Zahlungen zeigen aktuelle Untersuchungen von PYMNTS Intelligence und Mastercard, dass mehr als die Hälfte der amerikanischen kleinen und mittleren Unternehmen (KMU) Waren und Vorleistungen von ausländischen Lieferanten bezogen. Bei Unternehmen mit einem Jahresumsatz zwischen 1 und 10 Millionen Dollar lag der Anteil globaler Beschaffung bei 73%. Allerdings hat sich das Geschäftsmodell der KMU schneller weiterentwickelt als die Zahlungsinfrastruktur, so Mike Kresse, Executive Vice President bei Mastercard.</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="news-item">
+          <span class="tag geopolitik">Geopolitik</span>
+          <div class="outlet">Al Jazeera</div>
+          <h4><a href="https://www.aljazeera.com/news/2026/7/17/iraq-signs-deals-with-western-oil-firms-including-to-revive-syria-pipeline" target="_blank">Irak unterzeichnet Abkommen mit westlichen Ölfirmen, darunter zur Wiederbelebung der Syrien-Pipeline</a></h4>
+          <p>Irak und Syrien haben in Washington eine Kooperationsvereinbarung zur Sanierung der Irak-Syrien-Rohölleitung unterzeichnet (Kirkuk bis zum syrischen Mittelmeerhafen Baniyas), Teil von über 60 Mrd. USD an Abkommen zwischen Irak und US-Firmen, um die Abhängigkeit von der Straße von Hormus zu verringern.</p>
+          <details>
+            <summary>Ganzen Artikel anzeigen</summary>
+            <div class="article-body">
+              <p class="article-caption">Der irakische Premierminister Ali al-Zaidi spricht auf einem US-Irak-Wirtschaftsgipfel an der US-Handelskammer in Washington, DC, am 17. Juli (Rod Lamkey Jr/AP Photo)</p>
+              <p>Die irakische Regierung hat Dutzende Vereinbarungen mit westlichen Ölkonzernen getroffen, darunter zur Wiederherstellung einer Energie-Exportroute, mit der Bagdad sein Öl ohne die Straße von Hormus exportieren könnte.</p>
+              <p>Die vorläufigen Abkommen wurden am Freitag auf einem US-Irak-Wirtschaftsgipfel an der US-Handelskammer in Washington unterzeichnet, während Bagdad versucht, sich von der Abhängigkeit von der Straße von Hormus zu lösen, wo der Transit durch den US-israelischen Krieg gegen Iran stark gestört wurde.</p>
+              <p>Irak und Syrien unterzeichneten eine Kooperationsvereinbarung zum Wiederaufbau der seit Langem stillgelegten Irak-Syrien-Rohölleitung, die von der ölreichen Region Kirkuk im Nordirak zum syrischen Mittelmeerhafen Baniyas verläuft. Die staatliche irakische Nachrichtenagentur berichtete, der große US-Energiekonzern Chevron werde das Projekt im Rahmen der Vereinbarung durchführen.</p>
+              <p>In einer Erklärung begrüßte das US-Außenministerium den Plan des Irak und Syriens zur Sanierung der Pipeline, die laut Ministerium von einem „von den USA geführten internationalen Konsortium" technisch und finanziell umgesetzt werden soll. „Nach der Sanierung wird dieses bahnbrechende Projekt eine anfängliche Transportkapazität von 2 Millionen Barrel Rohöl pro Tag haben", so das Außenministerium. Es bezeichnete die Pipeline als „einen kritischen Energiekorridor, der die irakische Ölproduktion mit den Exportmärkten am Mittelmeer und darüber hinaus verbindet".</p>
+              <h5>„Die Straße von Hormus zur Nebensache machen"</h5>
+              <p>Der US-Botschafter in der Türkei, Tom Barrack, sagte, die jüngsten irakischen Pipeline-Abkommen würden zu einem Programm führen, „das die Straße von Hormus zur Nebensache macht". Neben dem Syrien-Pipeline-Projekt unterzeichnete Chevron zwei weitere Abkommen mit dem Irak zur Steigerung der Ölförderung, so Jake Spiering, Präsident für Unternehmensgeschäftsentwicklung des Konzerns.</p>
+              <p>Die irakische Regierung unterzeichnete zudem ein offizielles Abkommen mit Starlink, dem Unternehmen von Elon Musks SpaceX, um formell im Land tätig zu werden, berichteten irakische Staatsmedien. Insgesamt sind die ersten Abkommen irakischer Regierungsvertreter*innen mit US-Firmen in den Bereichen Energie, Gesundheitswesen und Technologie nach Reuters-Angaben mehr als 60 Milliarden US-Dollar wert.</p>
+              <p>„Wir verfolgen eine Politik der offenen Tür", sagte der irakische Premierminister Ali al-Zaidi über einen Dolmetscher beim Washington-Gipfel. „Jeder, der ein Projekt hat, kann kommen und mit uns sprechen. Wir werden es niemandem schwer machen."</p>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <div class="news-sources">
+        Ausgewählte seriöse Quellen: <a href="https://www.aljazeera.com/" target="_blank">Al Jazeera</a> ·
+        <a href="https://www.technologyreview.com/" target="_blank">MIT Technology Review</a> ·
+        <a href="https://www.technology.org/" target="_blank">Technology.org</a> ·
+        <a href="https://www.pymnts.com/" target="_blank">PYMNTS</a>. Volltexte oben jeweils mit Link zum Original.
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ PERSÖNLICHKEIT TAB ============ -->
+  <div id="persoenlichkeit" class="tab-panel">
+
+    <section>
+      <h2>Persönlichkeitsentwicklung</h2>
+      <p class="chart-sub">Selbstwahrnehmung, Charakterentwicklung, gesündere Habits — laufender Bereich ohne festen Endpunkt. Noch kaum befüllt, hier das Grundgerüst dafür.</p>
+    </section>
+
+    <section>
+      <h2>Kernwerte</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">Die wichtigsten Prinzipien, an denen Entscheidungen ausgerichtet werden</p>
+      <div class="vision-grid">
+        <div class="value-card">Disziplin<br>Tun statt Stimmung abwarten</div>
+        <div class="value-card">Ehrlichkeit<br>Sich selbst und anderen gegenüber, auch unbequem</div>
+        <div class="value-card">Wachstum<br>Lernen und besser werden statt stehen bleiben</div>
+        <div class="value-card">Unabhängigkeit<br>Finanziell und gedanklich auf eigenen Beinen stehen</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Habit-Tracker</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">Wöchentlich, Häkchen setzen bei erledigt. Speichert automatisch pro Kalenderwoche im Browser — neue Woche startet automatisch leer.</p>
+      <div class="chart-card">
+        <table class="habit-table" id="habit-tracker-table">
+          <thead>
+            <tr><th>Habit</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Lernen (Uni/Slowenisch)</td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="lernen" data-day="Mo" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="lernen" data-day="Di" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="lernen" data-day="Mi" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="lernen" data-day="Do" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="lernen" data-day="Fr" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="lernen" data-day="Sa" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="lernen" data-day="So" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+            </tr>
+            <tr>
+              <td>Nebengewerbe-Arbeit</td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="nebengewerbe" data-day="Mo" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="nebengewerbe" data-day="Di" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="nebengewerbe" data-day="Mi" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="nebengewerbe" data-day="Do" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="nebengewerbe" data-day="Fr" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="nebengewerbe" data-day="Sa" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+              <td><label class="habit-checkbox"><input type="checkbox" data-habit-id="nebengewerbe" data-day="So" onchange="toggleHabit(this)"><span class="habit-check"></span></label></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Reflexionsfragen</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">Allgemeine Ausgangsfragen zum Einstieg, keine Aussagen über dich, sondern ein Werkzeug zum Selbst-Beantworten</p>
+      <div class="reflect-list">
+        <div class="reflect-item"><span class="q-num">01</span><span>Welche Entscheidung der letzten Woche würdest du im Rückblick anders treffen, und warum?</span></div>
+        <div class="reflect-item"><span class="q-num">02</span><span>Wann hast du zuletzt aus Bequemlichkeit statt aus Überzeugung gehandelt?</span></div>
+        <div class="reflect-item"><span class="q-num">03</span><span>Welche Gewohnheit kostet dich am meisten Energie, ohne dir etwas zurückzugeben?</span></div>
+        <div class="reflect-item"><span class="q-num">04</span><span>Wo vermeidest du gerade ein unangenehmes Gespräch oder eine unangenehme Entscheidung?</span></div>
+        <div class="reflect-item"><span class="q-num">05</span><span>Was würdest du anders machen, wenn dich niemand dafür bewerten würde?</span></div>
+        <div class="reflect-item"><span class="q-num">06</span><span>Welche Person oder Situation bringt zuverlässig deine schlechteste Version hervor, und was kannst du daran ändern?</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Podcasts</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">Deine aktuellen Podcasts plus recherchierte Empfehlungen aus demselben Genre</p>
+      <div class="rec-grid">
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/podcast_timgabel.jpg" alt="Tim Gabel Podcast">
+          <div class="cover-body">
+            <span class="rec-tag">Hörst du bereits</span>
+            <h3>Tim Gabel Podcast</h3>
+            <p>2–3 Stunden lange Tiefgespräche, alle zwei Wochen, mit Gästen von Wissenschaftler*innen bis Prominenten. 244 Folgen seit 6 Jahren, bekannt für offenen Umgang mit unangenehmen Themen.</p>
+          </div>
+        </div>
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/podcast_offlineehrlich.jpg" alt="Offline + Ehrlich">
+          <div class="cover-body">
+            <span class="rec-tag">Hörst du bereits</span>
+            <h3>Offline + Ehrlich</h3>
+            <p>Trymacs (Max) und Varion (Flo) sprechen ungefiltert über Alltagsthemen, mit wechselnden Segmenten und Hörer*innenfragen.</p>
+          </div>
+        </div>
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/podcast_humanelevation.jpg" alt="Human Elevation Podcast">
+          <div class="cover-body">
+            <span class="rec-tag spekulativ">Empfehlung</span>
+            <h3>Human Elevation Podcast</h3>
+            <p>Patrick Reiser (ehem. veganer Profi-Bodybuilder) über mentales Wachstum, im Gespräch mit Unternehmer*innen und Psycholog*innen — Überschneidung zu deinem Bodybuilding-Interesse.</p>
+          </div>
+        </div>
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/podcast_psychologietogo.jpg" alt="Psychologie to go!">
+          <div class="cover-body">
+            <span class="rec-tag spekulativ">Empfehlung</span>
+            <h3>Psychologie to go!</h3>
+            <p>Von Bestsellerautor Dominik Spenst, seit Start in den deutschen Charts, in der Kategorie Mental Health auf Platz 1.</p>
+          </div>
+        </div>
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/podcast_chainlesslife.jpg" alt="Chainless Life">
+          <div class="cover-body">
+            <span class="rec-tag spekulativ">Empfehlung</span>
+            <h3>Chainless Life</h3>
+            <p>Mischa Janiec über die typischen Herausforderungen auf dem Weg der Persönlichkeitsentwicklung, im Gespräch mit Unternehmer*innen und Coaches.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Bücher</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">Gerade am Lesen, plus passende Empfehlungen zum Thema Selbstbild/Wachstum</p>
+      <div class="rec-grid">
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/cover_selbstbild.jpg" alt="Cover Selbstbild">
+          <div class="cover-body">
+            <span class="rec-tag">Liest du gerade</span>
+            <h3>Selbstbild — Carol Dweck</h3>
+            <p>Stanford-Psychologin, Konzept des "Growth Mindset": nicht die Fähigkeiten selbst entscheiden über Erfolg, sondern ob man sie als veränderbar oder fix ansieht.</p>
+          </div>
+        </div>
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/cover_1prozent.jpg" alt="Cover Die 1%-Methode">
+          <div class="cover-body">
+            <span class="rec-tag spekulativ">Empfehlung</span>
+            <h3>Die 1%-Methode — James Clear</h3>
+            <p>Deutsche Ausgabe von "Atomic Habits". Zeigt, wie kleine, tägliche Gewohnheiten über Identität und Systeme langfristig große Veränderungen bewirken. Ergänzt Dwecks Mindset-Ansatz um konkrete Habit-Mechanik.</p>
+          </div>
+        </div>
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/cover_7wege.jpg" alt="Cover Die 7 Wege zur Effektivität">
+          <div class="cover-body">
+            <span class="rec-tag spekulativ">Empfehlung</span>
+            <h3>Die 7 Wege zur Effektivität — Stephen R. Covey</h3>
+            <p>Über 40 Mio. verkaufte Exemplare weltweit. Kernthese: nicht Techniken, sondern Charakter, Kompetenz und Vertrauen führen zu echtem Erfolg.</p>
+          </div>
+        </div>
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/cover_gemocht.jpg" alt="Cover Du musst nicht von allen gemocht werden">
+          <div class="cover-body">
+            <span class="rec-tag spekulativ">Empfehlung</span>
+            <h3>Du musst nicht von allen gemocht werden — Kishimi/Koga</h3>
+            <p>Japanischer Weltbestseller in Dialogform, aufbauend auf Alfred Adlers Individualpsychologie. Über den Mut, das eigene Leben selbst zu bestimmen statt sich zu verbiegen.</p>
+          </div>
+        </div>
+        <div class="rec-card">
+          <span class="rec-tag spekulativ">Empfehlung (kein Cover verfügbar)</span>
+          <h3>Das Kind in dir muss Heimat finden — Stefanie Stahl</h3>
+          <p>Seit 2016 durchgehend auf der SPIEGEL-Bestsellerliste, in über 30 Sprachen übersetzt. Arbeit mit dem "inneren Kind"-Konzept zur Konfliktlösung und Selbstwahrnehmung.</p>
+        </div>
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/book_frankl.jpg" alt="Cover trotzdem Ja zum Leben sagen">
+          <div class="cover-body">
+            <span class="rec-tag spekulativ">Empfehlung</span>
+            <h3>...trotzdem Ja zum Leben sagen — Viktor Frankl</h3>
+            <p>Der Psychologe und KZ-Überlebende begründet die Logotherapie: Sinnfindung als zentrale menschliche Motivation, selbst unter extremsten Bedingungen. In 26 Sprachen übersetzt, ca. 9 Mio. verkaufte Exemplare allein in den USA.</p>
+          </div>
+        </div>
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/book_coelho.jpg" alt="Cover Der Alchimist">
+          <div class="cover-body">
+            <span class="rec-tag">Schon gelesen, sehr gut</span>
+            <h3>Der Alchimist — Paulo Coelho</h3>
+            <p>Roman über einen andalusischen Hirten auf der Suche nach seiner "persönlichen Legende". Über 320 Mio. verkaufte Exemplare, in 89 Sprachen übersetzt.</p>
+          </div>
+        </div>
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/book_siddhartha.jpg" alt="Cover Siddhartha">
+          <div class="cover-body">
+            <span class="rec-tag spekulativ">Empfehlung — ähnlich zu Der Alchimist</span>
+            <h3>Siddhartha — Hermann Hesse</h3>
+            <p>Deutscher Klassiker von 1922, oft in einem Atemzug mit "Der Alchimist" genannt: ein junger Mann sucht abseits vorgegebener Wege seinen eigenen spirituellen Weg zur Erkenntnis.</p>
+          </div>
+        </div>
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/book_strelecky.jpg" alt="Cover Das Café am Rande der Welt">
+          <div class="cover-body">
+            <span class="rec-tag spekulativ">Empfehlung — ähnlich zu Der Alchimist</span>
+            <h3>Das Café am Rande der Welt — John Strelecky</h3>
+            <p>Kurze Parabel über drei existenzielle Fragen zum Sinn des Lebens, in über 40 Sprachen übersetzt. Ähnlich zugänglich und kompakt wie "Der Alchimist".</p>
+          </div>
+        </div>
+        <div class="rec-card with-cover">
+          <img class="cover" src="07 Anhänge/book_dobelli.jpg" alt="Cover Die Kunst des klaren Denkens">
+          <div class="cover-body">
+            <span class="rec-tag spekulativ">Empfehlung</span>
+            <h3>Die Kunst des klaren Denkens — Rolf Dobelli</h3>
+            <p>52 verbreitete Denkfehler, die das eigene Urteilsvermögen trüben, mit anschaulichen Beispielen erklärt. Gute Ergänzung zum Growth-Mindset-Ansatz: nicht nur wie man denkt, sondern wo man sich selbst täuscht.</p>
+          </div>
+        </div>
+        <div class="rec-card">
+          <span class="rec-tag spekulativ">Empfehlung (kein Cover verfügbar)</span>
+          <h3>Jetzt! Die Kraft der Gegenwart — Eckhart Tolle</h3>
+          <p>Klassiker zu Achtsamkeit und Präsenz im Moment, oft als Einstieg für Leute ohne bisherigen Zugang zu Achtsamkeitspraxis empfohlen.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-tag spekulativ">Empfehlung (kein Cover verfügbar)</span>
+          <h3>Denke nach und werde reich — Napoleon Hill</h3>
+          <p>Klassiker von 1937, basiert auf Gesprächen mit über 500 erfolgreichen Personen der damaligen Zeit. Einer der meistverkauften Erfolgsratgeber überhaupt.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="cta-box">
+        <b>Damit das hier echten Inhalt bekommt:</b> Sag mir deine 3–4 wichtigsten Werte, welche Habits du aufbauen oder loswerden willst, oder ein Buch/eine Methode, die du gerade nutzt. Dann fülle ich Kernwerte, Habit-Tracker und Ressourcen mit deinen echten Angaben statt mit Platzhaltern.
+      </div>
+    </section>
+
+  </div>
+
+  <div class="levelup-toast pixel-font" id="levelup-toast"></div>
+
+  <footer>
+    Generiert aus dem Obsidian-Vault von Raphi. Sag "aktualisiere mein Dashboard" oder "aktualisiere Weltnews" für eine neue Version.
+  </footer>
+
+</div>
+
+<script>
+/* ============ EINFACHE PASSWORTSPERRE ============ */
+/* Kein echter Sicherheitsstandard, nur ein Deterrent gegen zufaellige
+   Besucher/Suchmaschinen, falls die Seite oeffentlich (z.B. GitHub Pages)
+   erreichbar ist. Passwort wird nicht im Klartext gespeichert, sondern nur
+   als einfacher Hash verglichen (djb2). */
+var PW_GATE_HASH = 2521883170; /* Hash von "Raphael" */
+var PW_GATE_KEY = 'raphiPwGateUnlocked_v1';
+function dgHash(s) {
+  var hash = 5381;
+  for (var i = 0; i < s.length; i++) {
+    hash = ((hash * 33) + s.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+function pwGateCheck() {
+  var input = document.getElementById('pw-gate-input');
+  var errorEl = document.getElementById('pw-gate-error');
+  var val = input.value;
+  if (dgHash(val) === PW_GATE_HASH) {
+    safeLSSet(PW_GATE_KEY, '1');
+    document.getElementById('pw-gate-overlay').style.display = 'none';
+  } else {
+    errorEl.textContent = 'Falscher Code.';
+    input.value = '';
+    input.focus();
+  }
+}
+(function () {
+  if (safeLSGet(PW_GATE_KEY) === '1') {
+    var overlay = document.getElementById('pw-gate-overlay');
+    if (overlay) { overlay.style.display = 'none'; }
+  }
+})();
+document.addEventListener('DOMContentLoaded', function () {
+  var btn = document.getElementById('pw-gate-btn');
+  var input = document.getElementById('pw-gate-input');
+  if (btn) { btn.addEventListener('click', pwGateCheck); }
+  if (input) {
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { pwGateCheck(); } });
+    if (document.getElementById('pw-gate-overlay').style.display !== 'none') { input.focus(); }
+  }
+});
+
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ============ SICHERER LOCALSTORAGE-ZUGRIFF ============ */
+/* Safari blockiert localStorage teilweise bei lokal geoeffneten Dateien (file://).
+   Ohne Absicherung wuerde ein Fehler hier den gesamten restlichen Script-Block
+   stoppen bzw. einzelne Klick-Handler lautlos abbrechen lassen. Deshalb faengt
+   safeLSGet/safeLSSet jeden Fehler ab und faellt auf einen In-Memory-Speicher
+   zurueck, damit die App zumindest waehrend der Sitzung normal funktioniert. */
+var lsMemoryFallback = {};
+var lsAvailable = true;
+function safeLSGet(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch (e) {
+    lsAvailable = false;
+    return Object.prototype.hasOwnProperty.call(lsMemoryFallback, key) ? lsMemoryFallback[key] : null;
+  }
+}
+function safeLSSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    lsAvailable = false;
+    lsMemoryFallback[key] = value;
+    return false;
+  }
+}
+
+/* ============ ON-SCREEN DEBUG-LOG ============ */
+/* Damit Fehler auf dem Handy sichtbar sind, ohne dass ein Mac mit Safari-
+   Entwicklertools noetig ist. Standardmaessig unsichtbar, per Knopf unten
+   rechts einblendbar. */
+var dbgLines = [];
+function dbgLog(msg) {
+  var t = new Date().toLocaleTimeString('de-AT');
+  dbgLines.push('[' + t + '] ' + msg);
+  if (dbgLines.length > 60) { dbgLines.shift(); }
+  var panel = document.getElementById('dbg-log-content');
+  if (panel) { panel.textContent = dbgLines.join('\n'); panel.scrollTop = panel.scrollHeight; }
+}
+function dbgToggle() {
+  var el = document.getElementById('dbg-log-panel');
+  if (!el) { return; }
+  el.style.display = (el.style.display === 'none' || !el.style.display) ? 'block' : 'none';
+}
+window.addEventListener('error', function(e) {
+  dbgLog('FEHLER: ' + e.message + ' (' + (e.filename || '') + ':' + (e.lineno || '') + ')');
+});
+
+/* ============ XP-LEVEL SYSTEM (eine Gesamt-Leiste, Kategorien = Buttons) ============ */
+var SKILLS = [
+  { id: 'lernen',           name: 'Lernen',        color: '#7fffd4' },
+  { id: 'arbeit',            name: 'Arbeit',        color: '#ffe15a' },
+  { id: 'nebengewerbe',      name: 'Nebengewerbe',  color: '#ff9b3d' },
+  { id: 'fitness',           name: 'Fitness',       color: '#ff4d6d' },
+  { id: 'finanzen',          name: 'Finanzen',      color: '#4dff4d' },
+  { id: 'persoenlichkeit',   name: 'Persönlichkeit',color: '#c77dff' },
+  { id: 'sprachen',          name: 'Sprachen',      color: '#4dd2ff' },
+  { id: 'hobby',             name: 'Hobby',         color: '#ff6ec7' }
+];
+var XP_PER_CLICK = 10;
+var XP_PER_LEVEL = 100;
+var STORAGE_KEY = 'raphiXpState_v2';
+
+function loadXpState() {
+  var raw = safeLSGet(STORAGE_KEY);
+  var state = {};
+  SKILLS.forEach(function(s) { state[s.id] = 0; });
+  if (raw) {
+    try {
+      var parsed = JSON.parse(raw);
+      SKILLS.forEach(function(s) { if (typeof parsed[s.id] === 'number') state[s.id] = parsed[s.id]; });
+    } catch (e) {}
+  }
+  return state;
+}
+function saveXpState(state) { safeLSSet(STORAGE_KEY, JSON.stringify(state)); }
+function totalXp() { var t = 0; SKILLS.forEach(function(s){ t += xpState[s.id] || 0; }); return t; }
+function levelFromXp(xp) { return Math.floor(xp / XP_PER_LEVEL) + 1; }
+function xpIntoLevel(xp) { return xp % XP_PER_LEVEL; }
+
+var xpState = loadXpState();
+
+function render() {
+  var total = totalXp();
+  var lvl = levelFromXp(total);
+  var into = xpIntoLevel(total);
+  var filledSegs = Math.round((into / XP_PER_LEVEL) * 20);
+
+  // große Leiste (20 Segmente)
+  var bar = document.getElementById('big-xp-bar');
+  bar.innerHTML = '';
+  for (var i = 0; i < 20; i++) {
+    var seg = document.createElement('div');
+    seg.className = 'xp-seg' + (i < filledSegs ? ' filled' : '');
+    if (i < filledSegs) { seg.style.background = '#7fffd4'; seg.style.boxShadow = '0 0 4px #7fffd4'; }
+    bar.appendChild(seg);
+  }
+  document.getElementById('big-xp-into').textContent = into + ' / ' + XP_PER_LEVEL + ' XP';
+  document.getElementById('big-xp-total').textContent = 'GESAMT: ' + total + ' XP';
+  document.getElementById('char-level-badge').textContent = 'LV. ' + lvl;
+  document.getElementById('char-summary').textContent = SKILLS.length + ' KATEGORIEN AKTIV';
+
+  // Buttons (einmalig aufbauen)
+  var btnContainer = document.getElementById('skill-buttons');
+  if (!btnContainer.dataset.built) {
+    btnContainer.innerHTML = '';
+    SKILLS.forEach(function(skill) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'skill-pixel-btn pixel-font';
+      btn.style.background = skill.color;
+      btn.innerHTML = skill.name + '<span class="amt">+' + XP_PER_CLICK + ' XP</span>';
+      btn.onclick = function() { addXP(skill.id); };
+      btnContainer.appendChild(btn);
+    });
+    btnContainer.dataset.built = '1';
+  }
+
+  // Aufteilung
+  var breakdown = document.getElementById('skill-breakdown');
+  breakdown.innerHTML = '';
+  SKILLS.forEach(function(skill) {
+    var xp = xpState[skill.id] || 0;
+    var row = document.createElement('div');
+    row.className = 'breakdown-row';
+    row.innerHTML =
+      '<span><span class="swatch" style="background:' + skill.color + '"></span>' + skill.name + '</span>' +
+      '<span>' + xp + ' XP</span>';
+    breakdown.appendChild(row);
+  });
+}
+
+function addXP(id) {
+  var totalBefore = totalXp();
+  var lvlBefore = levelFromXp(totalBefore);
+  xpState[id] = (xpState[id] || 0) + XP_PER_CLICK;
+  saveXpState(xpState);
+  var totalAfter = totalXp();
+  var lvlAfter = levelFromXp(totalAfter);
+  render();
+  if (lvlAfter > lvlBefore) { showLevelUpToast(lvlAfter); }
+}
+
+function showLevelUpToast(lvl) {
+  var toast = document.getElementById('levelup-toast');
+  toast.textContent = 'LEVEL UP! -> LV. ' + lvl;
+  toast.classList.add('show');
+  setTimeout(function() { toast.classList.remove('show'); }, 2200);
+}
+
+function resetAllXP() {
+  if (!confirm('Wirklich den gesamten XP-Fortschritt zurücksetzen?')) return;
+  SKILLS.forEach(function(s) { xpState[s.id] = 0; });
+  saveXpState(xpState);
+  render();
+}
+
+function collectSprite(el) {
+  if (el.classList.contains('collected')) return;
+  var bonus = 5;
+  var skill = SKILLS[Math.floor(Math.random() * SKILLS.length)];
+  var totalBefore = totalXp();
+  var lvlBefore = levelFromXp(totalBefore);
+  xpState[skill.id] = (xpState[skill.id] || 0) + bonus;
+  saveXpState(xpState);
+
+  var popup = document.createElement('div');
+  popup.className = 'collect-popup';
+  popup.textContent = '+' + bonus + ' XP';
+  popup.style.left = el.style.left || 'auto';
+  popup.style.right = el.style.right || 'auto';
+  popup.style.top = el.offsetTop + 'px';
+  (el.parentElement || document.body).appendChild(popup);
+  setTimeout(function() { popup.remove(); }, 900);
+
+  el.classList.add('collected');
+  render();
+
+  var totalAfter = totalXp();
+  if (levelFromXp(totalAfter) > lvlBefore) { showLevelUpToast(levelFromXp(totalAfter)); }
+}
+
+/* Laufende Figuren antippen: XP ohne die Figur zu entfernen */
+function tapNpc(el) {
+  var bonus = 5;
+  var skill = SKILLS[Math.floor(Math.random() * SKILLS.length)];
+  var lvlBefore = levelFromXp(totalXp());
+  xpState[skill.id] = (xpState[skill.id] || 0) + bonus;
+  saveXpState(xpState);
+
+  var rect = el.getBoundingClientRect();
+  var popup = document.createElement('div');
+  popup.className = 'collect-popup';
+  popup.textContent = '+' + bonus + ' XP';
+  popup.style.position = 'fixed';
+  popup.style.left = rect.left + 'px';
+  popup.style.top = (rect.top - 6) + 'px';
+  popup.style.right = 'auto';
+  document.body.appendChild(popup);
+  setTimeout(function() { popup.remove(); }, 900);
+
+  render();
+  if (levelFromXp(totalXp()) > lvlBefore) { showLevelUpToast(levelFromXp(totalXp())); }
+}
+
+render();
+
+/* ---- Offene-Punkte Checkboxen (Nadel & Zwirn) ---- */
+var TODO_STORAGE_KEY = 'raphiTodoState_v1';
+
+function loadTodoState() {
+  try {
+    return JSON.parse(safeLSGet(TODO_STORAGE_KEY)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveTodoState(state) {
+  safeLSSet(TODO_STORAGE_KEY, JSON.stringify(state));
+}
+
+function toggleTodo(input) {
+  var state = loadTodoState();
+  state[input.dataset.todoId] = input.checked;
+  saveTodoState(state);
+}
+
+function restoreTodoState() {
+  var state = loadTodoState();
+  var boxes = document.querySelectorAll('#nz-todo-list input[type="checkbox"]');
+  boxes.forEach(function(box) {
+    if (state[box.dataset.todoId]) { box.checked = true; }
+  });
+}
+
+restoreTodoState();
+
+/* ---- Habit-Tracker (wöchentlich, persistiert pro Kalenderwoche) ---- */
+var HABIT_STORAGE_KEY = 'raphiHabitState_v1';
+
+function getISOWeekKey(d) {
+  d = d ? new Date(d) : new Date();
+  var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  var dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  var yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  var weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return date.getUTCFullYear() + '-W' + String(weekNo).padStart(2, '0');
+}
+
+function loadHabitState() {
+  try {
+    return JSON.parse(safeLSGet(HABIT_STORAGE_KEY)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveHabitState(state) {
+  safeLSSet(HABIT_STORAGE_KEY, JSON.stringify(state));
+}
+
+function toggleHabit(input) {
+  var state = loadHabitState();
+  var week = getISOWeekKey();
+  var key = input.dataset.habitId + '-' + input.dataset.day;
+  state[week] = state[week] || {};
+  state[week][key] = input.checked;
+  saveHabitState(state);
+}
+
+function restoreHabitState() {
+  var state = loadHabitState();
+  var week = getISOWeekKey();
+  var weekState = state[week] || {};
+  var boxes = document.querySelectorAll('#habit-tracker-table input[type="checkbox"]');
+  boxes.forEach(function(box) {
+    var key = box.dataset.habitId + '-' + box.dataset.day;
+    if (weekState[key]) { box.checked = true; }
+  });
+}
+
+restoreHabitState();
+
+/* ---- Trainings-Logbuch ---- */
+var TRAINING_STORAGE_KEY = 'raphiTrainingLog_v1';
+
+/* Bild-Zuordnung je Übungsname (exakter, normalisierter Abgleich inkl. Panatta-Maschinen) */
+function trainNormName(s) { return (s || '').toLowerCase().trim().replace(/\s+/g, ' '); }
+var EXERCISE_IMAGES = {};
+EXERCISE_IMAGES[trainNormName('Brustpresse sitzend')] = '07 Anhänge/uebungen/brustpresse_sitzend.jpg';
+EXERCISE_IMAGES[trainNormName('Brustpresse liegend')] = '07 Anhänge/uebungen/brustpresse_liegend.jpg';
+EXERCISE_IMAGES[trainNormName('Flyes/ Seitliche')] = '07 Anhänge/uebungen/flyes_seitliche.jpg';
+EXERCISE_IMAGES[trainNormName('Flyes/Seitliche')] = '07 Anhänge/uebungen/flyes_seitliche.jpg';
+EXERCISE_IMAGES[trainNormName('Flyes/ Seitliche Brust')] = '07 Anhänge/uebungen/flyes_seitliche.jpg';
+EXERCISE_IMAGES[trainNormName('Flyes/Seitliche Brust')] = '07 Anhänge/uebungen/flyes_seitliche.jpg';
+EXERCISE_IMAGES[trainNormName('Curls am Kabel')] = '07 Anhänge/uebungen/curls_kabel.jpg';
+EXERCISE_IMAGES[trainNormName('Curls an der Bizepsmaschine')] = '07 Anhänge/uebungen/curls_bizepsmaschine.jpg';
+EXERCISE_IMAGES[trainNormName('SZ Stange')] = '07 Anhänge/uebungen/sz_stange_curls.jpg';
+EXERCISE_IMAGES[trainNormName('Überzüge am Kabel')] = '07 Anhänge/uebungen/ueberzuege_kabel.jpg';
+EXERCISE_IMAGES[trainNormName('High Row')] = '07 Anhänge/uebungen/high_row.jpg';
+EXERCISE_IMAGES[trainNormName('High Row Single Arm')] = '07 Anhänge/uebungen/high_row_single_arm.jpg';
+EXERCISE_IMAGES[trainNormName('Low Row Single Arm')] = '07 Anhänge/uebungen/low_row_single_arm.jpg';
+EXERCISE_IMAGES[trainNormName('Latziehen am Kabel')] = '07 Anhänge/uebungen/latziehen_kabel.jpg';
+EXERCISE_IMAGES[trainNormName('Trizeps drücken an der Maschine')] = '07 Anhänge/uebungen/trizeps_druecken_maschine.jpg';
+EXERCISE_IMAGES[trainNormName('SZ')] = '07 Anhänge/uebungen/sz_trizeps_skullcrusher.jpg';
+EXERCISE_IMAGES[trainNormName('Trizeps Überkopfdrücken an der Machine')] = '07 Anhänge/uebungen/trizeps_ueberkopf_maschine.jpg';
+EXERCISE_IMAGES[trainNormName('Trizeps Überkopfdrücken an der Maschine')] = '07 Anhänge/uebungen/trizeps_ueberkopf_maschine.jpg';
+EXERCISE_IMAGES[trainNormName('Adduktor Maschine')] = '07 Anhänge/uebungen/adduktor_maschine.jpg';
+EXERCISE_IMAGES[trainNormName('Beinstrecker')] = '07 Anhänge/uebungen/beinstrecker.jpg';
+EXERCISE_IMAGES[trainNormName('Beinbeuger im Liegen')] = '07 Anhänge/uebungen/beinbeuger_liegend.jpg';
+EXERCISE_IMAGES[trainNormName('Squat an der Maschine')] = '07 Anhänge/uebungen/squat_maschine.jpg';
+EXERCISE_IMAGES[trainNormName('Single Leg Press')] = '07 Anhänge/uebungen/single_leg_press.jpg';
+EXERCISE_IMAGES[trainNormName('Waden an der Maschine')] = '07 Anhänge/uebungen/waden_maschine.jpg';
+EXERCISE_IMAGES[trainNormName('Seitheben an der Maschine')] = '07 Anhänge/uebungen/seitheben_maschine.jpg';
+EXERCISE_IMAGES[trainNormName('Schulterdrücken an der Multipresse')] = '07 Anhänge/uebungen/schulterdruecken_multipresse.jpg';
+EXERCISE_IMAGES[trainNormName('Reverse Buttefly an der Maschine')] = '07 Anhänge/uebungen/reverse_butterfly_maschine.jpg';
+EXERCISE_IMAGES[trainNormName('Reverse Butterfly an der Maschine')] = '07 Anhänge/uebungen/reverse_butterfly_maschine.jpg';
+EXERCISE_IMAGES[trainNormName('Bauchcrunshes an der Maschine')] = '07 Anhänge/uebungen/bauchcrunches_maschine.jpg';
+EXERCISE_IMAGES[trainNormName('Bauchcrunches an der Maschine')] = '07 Anhänge/uebungen/bauchcrunches_maschine.jpg';
+EXERCISE_IMAGES[trainNormName('Skull Crushes für den Bauch am Kabel')] = '07 Anhänge/uebungen/skullcrushes_bauch_kabel.jpg';
+EXERCISE_IMAGES[trainNormName('Seitliche Bauchmuskelmaschine')] = '07 Anhänge/uebungen/seitliche_bauchmuskelmaschine.jpg';
+EXERCISE_IMAGES[trainNormName('Seitliche Bauchmuskeln')] = '07 Anhänge/uebungen/seitliche_bauchmuskelmaschine.jpg';
+
+function loadTrainingState() {
+  var raw = safeLSGet(TRAINING_STORAGE_KEY);
+  if (raw) {
+    try { return JSON.parse(raw); } catch (e) {}
+  }
+  return { days: [] };
+}
+function saveTrainingState() { safeLSSet(TRAINING_STORAGE_KEY, JSON.stringify(trainingState)); }
+
+var trainingState = loadTrainingState();
+var trainIdCounter = 0;
+function trainNewId(prefix) { trainIdCounter++; return prefix + '_' + Date.now() + '_' + trainIdCounter; }
+
+function addTrainingDay() {
+  dbgLog('addTrainingDay() aufgerufen');
+  var input = document.getElementById('train-new-day-name');
+  var name = input.value.trim();
+  if (!name) { dbgLog('addTrainingDay: Name leer, abgebrochen'); return; }
+  var newDay = { id: trainNewId('day'), name: name, exercises: [] };
+  trainingState.days.push(newDay);
+  input.value = '';
+  input.blur();
+  saveTrainingState();
+  trainScrollToDayId = newDay.id;
+  dbgLog('addTrainingDay: "' + name + '" angelegt, Tage jetzt: ' + trainingState.days.length);
+  renderTraining();
+}
+
+function deleteTrainingDay(dayId) {
+  if (!confirm('Diesen Trainingstag inklusive aller Übungen und Sätze löschen?')) { return; }
+  trainingState.days = trainingState.days.filter(function(d) { return d.id !== dayId; });
+  saveTrainingState();
+  renderTraining();
+}
+
+function addTrainingExercise(dayId, btn) {
+  dbgLog('addTrainingExercise() aufgerufen, dayId=' + dayId);
+  var row = btn.closest('.train-add-exercise-row');
+  if (!row) { dbgLog('addTrainingExercise: .train-add-exercise-row nicht gefunden!'); return; }
+  var nameInput = row.querySelector('.train-exercise-name-input');
+  var tagInput = row.querySelector('.train-exercise-tag-input');
+  if (!nameInput || !tagInput) { dbgLog('addTrainingExercise: Eingabefelder nicht gefunden!'); return; }
+  var name = nameInput.value.trim();
+  dbgLog('addTrainingExercise: gelesener Name = "' + name + '"');
+  if (!name) { dbgLog('addTrainingExercise: Name leer, abgebrochen'); return; }
+  var day = trainingState.days.filter(function(d) { return d.id === dayId; })[0];
+  if (!day) { dbgLog('addTrainingExercise: Tag mit id ' + dayId + ' nicht gefunden!'); return; }
+  var newEx = { id: trainNewId('ex'), name: name, tag: tagInput.value.trim(), sets: [] };
+  day.exercises.push(newEx);
+  nameInput.value = '';
+  tagInput.value = '';
+  nameInput.blur();
+  tagInput.blur();
+  saveTrainingState();
+  trainScrollToExId = newEx.id;
+  dbgLog('addTrainingExercise: "' + name + '" hinzugefuegt, Uebungen in Tag jetzt: ' + day.exercises.length);
+  renderTraining();
+}
+
+function deleteTrainingExercise(dayId, exerciseId) {
+  var day = trainingState.days.filter(function(d) { return d.id === dayId; })[0];
+  if (!day) { return; }
+  day.exercises = day.exercises.filter(function(ex) { return ex.id !== exerciseId; });
+  saveTrainingState();
+  renderTraining();
+}
+
+function addTrainingSet(dayId, exerciseId, btn) {
+  var row = btn.closest('.train-add-row');
+  var gewichtInput = row.querySelector('.train-gewicht-input');
+  var wdhInput = row.querySelector('.train-wdh-input');
+  var gewicht = parseFloat(gewichtInput.value);
+  var wdh = parseInt(wdhInput.value, 10);
+  if (isNaN(gewicht) || isNaN(wdh)) { return; }
+  var day = trainingState.days.filter(function(d) { return d.id === dayId; })[0];
+  if (!day) { return; }
+  var ex = day.exercises.filter(function(e) { return e.id === exerciseId; })[0];
+  if (!ex) { return; }
+  ex.sets.push({ gewicht: gewicht, wdh: wdh, datum: new Date().toISOString().slice(0, 10) });
+  gewichtInput.value = '';
+  wdhInput.value = '';
+  gewichtInput.blur();
+  wdhInput.blur();
+  saveTrainingState();
+  trainScrollToExId = ex.id;
+  renderTraining();
+}
+
+function deleteTrainingSet(dayId, exerciseId, setIndex) {
+  var day = trainingState.days.filter(function(d) { return d.id === dayId; })[0];
+  if (!day) { return; }
+  var ex = day.exercises.filter(function(e) { return e.id === exerciseId; })[0];
+  if (!ex) { return; }
+  ex.sets.splice(setIndex, 1);
+  saveTrainingState();
+  renderTraining();
+}
+
+function trainEsc(str) {
+  var div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+
+var trainScrollToDayId = null;
+var trainScrollToExId = null;
+
+function renderTraining() {
+  var list = document.getElementById('training-days-list');
+  if (!list) { return; }
+  list.innerHTML = '';
+
+  if (trainingState.days.length === 0) {
+    var emptyCard = document.createElement('div');
+    emptyCard.className = 'chart-card';
+    emptyCard.innerHTML = '<p class="chart-sub" style="margin:0;">Noch kein Trainingstag angelegt. Oben einen Namen eingeben (z.B. "Lower Body" oder "Full Body") und anlegen.</p>';
+    list.appendChild(emptyCard);
+    return;
+  }
+
+  trainingState.days.forEach(function(day) {
+    var dayCard = document.createElement('div');
+    dayCard.className = 'train-day-card';
+    dayCard.dataset.dayId = day.id;
+
+    var header = document.createElement('div');
+    header.className = 'train-day-header';
+    header.innerHTML = '<h3>' + trainEsc(day.name) + '</h3>';
+    var delDayBtn = document.createElement('button');
+    delDayBtn.type = 'button';
+    delDayBtn.className = 'train-small-btn danger';
+    delDayBtn.textContent = 'Trainingstag löschen';
+    delDayBtn.onclick = function() { deleteTrainingDay(day.id); };
+    header.appendChild(delDayBtn);
+    dayCard.appendChild(header);
+
+    day.exercises.forEach(function(ex) {
+      var exDiv = document.createElement('div');
+      exDiv.className = 'train-exercise';
+      exDiv.dataset.exId = ex.id;
+
+      var exHeader = document.createElement('div');
+      exHeader.className = 'train-exercise-header';
+      var tagHtml = ex.tag ? '<span class="train-tag">' + trainEsc(ex.tag) + '</span>' : '';
+      exHeader.innerHTML = '<span class="name">' + trainEsc(ex.name) + tagHtml + '</span>';
+      var delExBtn = document.createElement('button');
+      delExBtn.type = 'button';
+      delExBtn.className = 'train-small-btn danger';
+      delExBtn.textContent = 'Entfernen';
+      delExBtn.onclick = function() { deleteTrainingExercise(day.id, ex.id); };
+      exHeader.appendChild(delExBtn);
+      exDiv.appendChild(exHeader);
+
+      var exBody = document.createElement('div');
+      exBody.className = 'train-exercise-body';
+
+      var exLeft = document.createElement('div');
+      exLeft.className = 'train-exercise-left';
+
+      if (ex.sets.length > 0) {
+        var table = document.createElement('table');
+        table.className = 'train-sets-table';
+        var thead = document.createElement('thead');
+        thead.innerHTML = '<tr><th>Satz</th><th>Gewicht</th><th>Wdh.</th><th>Datum</th><th></th></tr>';
+        table.appendChild(thead);
+        var tbody = document.createElement('tbody');
+        ex.sets.forEach(function(set, idx) {
+          var tr = document.createElement('tr');
+          var tdDel = document.createElement('td');
+          var delSetBtn = document.createElement('button');
+          delSetBtn.type = 'button';
+          delSetBtn.className = 'train-small-btn danger';
+          delSetBtn.textContent = '×';
+          delSetBtn.style.padding = '3px 9px';
+          delSetBtn.onclick = function() { deleteTrainingSet(day.id, ex.id, idx); };
+          tdDel.appendChild(delSetBtn);
+          tr.innerHTML = '<td>' + (idx + 1) + '</td><td>' + set.gewicht + ' kg</td><td>' + set.wdh + '</td><td>' + trainEsc(set.datum) + '</td>';
+          tr.appendChild(tdDel);
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        exLeft.appendChild(table);
+      } else {
+        var hint = document.createElement('div');
+        hint.className = 'train-empty-hint';
+        hint.textContent = 'Noch keine Sätze protokolliert.';
+        exLeft.appendChild(hint);
+      }
+
+      var addRow = document.createElement('div');
+      addRow.className = 'train-add-row';
+      addRow.innerHTML =
+        '<input type="number" class="train-num train-gewicht-input" placeholder="Kg" step="0.5" min="0">' +
+        '<input type="number" class="train-num train-wdh-input" placeholder="Wdh." step="1" min="0">';
+      var addSetBtn = document.createElement('button');
+      addSetBtn.type = 'button';
+      addSetBtn.className = 'train-small-btn primary';
+      addSetBtn.textContent = 'Satz speichern';
+      addSetBtn.onclick = function() { addTrainingSet(day.id, ex.id, addSetBtn); };
+      addRow.appendChild(addSetBtn);
+      exLeft.appendChild(addRow);
+
+      exBody.appendChild(exLeft);
+
+      var imgPath = EXERCISE_IMAGES[trainNormName(ex.name)];
+      if (imgPath) {
+        var exImg = document.createElement('img');
+        exImg.src = imgPath;
+        exImg.alt = ex.name;
+        exImg.className = 'train-exercise-img';
+        exBody.appendChild(exImg);
+      }
+
+      exDiv.appendChild(exBody);
+
+      dayCard.appendChild(exDiv);
+    });
+
+    var addExRow = document.createElement('div');
+    addExRow.className = 'train-add-exercise-row';
+    addExRow.innerHTML =
+      '<input type="text" class="train-exercise-name-input" placeholder="Neue Übung, z.B. Hack Squats">' +
+      '<input type="text" class="train-exercise-tag-input" placeholder="Kategorie, z.B. Beintrainer">';
+    var addExBtn = document.createElement('button');
+    addExBtn.type = 'button';
+    addExBtn.className = 'train-small-btn primary';
+    addExBtn.textContent = 'Übung hinzufügen';
+    addExBtn.onclick = function() { addTrainingExercise(day.id, addExBtn); };
+    addExRow.appendChild(addExBtn);
+    dayCard.appendChild(addExRow);
+
+    list.appendChild(dayCard);
+  });
+
+  if (trainScrollToExId) {
+    var exTarget = list.querySelector('[data-ex-id="' + trainScrollToExId + '"]');
+    trainScrollToExId = null;
+    if (exTarget) {
+      setTimeout(function() { exTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+      return;
+    }
+  }
+  if (trainScrollToDayId) {
+    var dayTarget = list.querySelector('[data-day-id="' + trainScrollToDayId + '"]');
+    trainScrollToDayId = null;
+    if (dayTarget) {
+      setTimeout(function() { dayTarget.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+    }
+  }
+}
+
+renderTraining();
+
+/* ---- Datensicherung: Export/Import des lokalen Fortschritts ---- */
+var BACKUP_KEYS = ['raphiXpState_v2', 'raphiTodoState_v1', 'raphiHabitState_v1', 'raphiTrainingLog_v1'];
+
+function exportProgress() {
+  var backup = { erstellt: new Date().toISOString(), daten: {} };
+  BACKUP_KEYS.forEach(function(key) {
+    var raw = safeLSGet(key);
+    if (raw !== null) { backup.daten[key] = raw; }
+  });
+
+  var json = JSON.stringify(backup, null, 2);
+  var blob = new Blob([json], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var datum = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'dashboard-fortschritt_' + datum + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  var status = document.getElementById('backup-status');
+  status.textContent = 'Gesichert: ' + new Date().toLocaleString('de-AT');
+  status.style.color = 'var(--status-good)';
+}
+
+function importProgress(file) {
+  var status = document.getElementById('backup-status');
+  if (!file) { return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var backup = JSON.parse(e.target.result);
+      if (!backup || typeof backup.daten !== 'object') { throw new Error('Ungültiges Format'); }
+      var restored = 0;
+      BACKUP_KEYS.forEach(function(key) {
+        if (backup.daten[key] !== undefined) {
+          safeLSSet(key, backup.daten[key]);
+          restored++;
+        }
+      });
+      status.textContent = restored + ' Bereich(e) geladen. Seite wird neu geladen ...';
+      status.style.color = 'var(--status-good)';
+      setTimeout(function() { location.reload(); }, 900);
+    } catch (err) {
+      status.textContent = 'Fehler: Datei konnte nicht gelesen werden (' + err.message + ')';
+      status.style.color = 'var(--status-critical)';
+    }
+  };
+  reader.onerror = function() {
+    status.textContent = 'Fehler beim Lesen der Datei.';
+    status.style.color = 'var(--status-critical)';
+  };
+  reader.readAsText(file);
+}
+
+/* ---- Einnahmen-Ausgaben-Rechner ---- */
+var FIN_PHASE_PRESETS = {
+  teilzeit: { gehalt: 1050, provision: 0 },
+  vollzeit: { gehalt: 1824, provision: 150 },
+  '25h':     { gehalt: 1276, provision: 0 }
+};
+
+function finApplyPhase() {
+  var phase = document.getElementById('fin-phase').value;
+  var preset = FIN_PHASE_PRESETS[phase];
+  if (preset) {
+    document.getElementById('fin-gehalt').value = preset.gehalt;
+    document.getElementById('fin-provision').value = preset.provision;
+  }
+  finRun();
+}
+
+function finRun() {
+  var gehalt = parseFloat(document.getElementById('fin-gehalt').value) || 0;
+  var provision = parseFloat(document.getElementById('fin-provision').value) || 0;
+  var familienbeihilfe = parseFloat(document.getElementById('fin-familienbeihilfe').value) || 0;
+  var wohnbeihilfe = parseFloat(document.getElementById('fin-wohnbeihilfe').value) || 0;
+  var sonstigeEinnahmen = parseFloat(document.getElementById('fin-sonstige-einnahmen').value) || 0;
+  var grundausgaben = parseFloat(document.getElementById('fin-grundausgaben').value) || 0;
+  var sprit = parseFloat(document.getElementById('fin-sprit').value) || 0;
+  var sonstigeAusgaben = parseFloat(document.getElementById('fin-sonstige-ausgaben').value) || 0;
+  var monate = parseFloat(document.getElementById('fin-monate').value) || 0;
+
+  var einnahmenGesamt = gehalt + provision + familienbeihilfe + wohnbeihilfe + sonstigeEinnahmen;
+  var ausgabenGesamt = grundausgaben + sprit + sonstigeAusgaben;
+  var sparbetrag = einnahmenGesamt - ausgabenGesamt;
+  var sparquote = einnahmenGesamt > 0 ? (sparbetrag / einnahmenGesamt) * 100 : 0;
+  var hochrechnung = sparbetrag * monate;
+
+  document.getElementById('fin-res-einnahmen').textContent = einnahmenGesamt.toFixed(0) + ' €';
+  document.getElementById('fin-res-ausgaben').textContent = ausgabenGesamt.toFixed(0) + ' €';
+  document.getElementById('fin-res-sparbetrag').textContent = sparbetrag.toFixed(0) + ' €';
+  document.getElementById('fin-res-sparquote').textContent = sparquote.toFixed(1) + ' %';
+  document.getElementById('fin-res-hochrechnung').textContent = hochrechnung.toFixed(0) + ' € (' + monate + ' Mon.)';
+
+  document.getElementById('fin-tile-sparbetrag').classList.toggle('negative', sparbetrag < 0);
+  document.getElementById('fin-tile-sparquote').classList.toggle('negative', sparquote < 0);
+}
+
+finRun();
+
+/* ---- Interaktiver Stickpreis-Kalkulator (Nadel & Zwirn) ---- */
+var CALC_FIXKOSTEN_MONAT = 186.11;
+var CALC_SIZE_PRESETS = {
+  textil: [
+    { id: 'xs', label: 'XS (3x3cm)', vk: 2.80 },
+    { id: 's',  label: 'S (6x6cm)',  vk: 3.90 },
+    { id: 'm',  label: 'M (12x12cm)', vk: 5.80 },
+    { id: 'l',  label: 'L (20x20cm)', vk: 8.80 },
+    { id: 'xl', label: 'XL (größte Stufe)', vk: 12.80 }
+  ],
+  kappe: [
+    { id: 's', label: 'S (5x5cm)', vk: 3.90 },
+    { id: 'm', label: 'M (9x9cm)', vk: 5.80 },
+    { id: 'l', label: 'L (12x12cm)', vk: 8.30 }
+  ]
+};
+
+function calcRabattFaktor(stueck) {
+  if (stueck >= 250) return 0.20;
+  if (stueck >= 100) return 0.16;
+  if (stueck >= 50) return 0.12;
+  if (stueck >= 25) return 0.08;
+  if (stueck >= 10) return 0.03;
+  return 0;
+}
+
+function calcUpdateSize() {
+  var kategorie = document.getElementById('calc-kategorie').value;
+  var sel = document.getElementById('calc-groesse');
+  sel.innerHTML = '';
+  CALC_SIZE_PRESETS[kategorie].forEach(function(preset) {
+    var opt = document.createElement('option');
+    opt.value = preset.id;
+    opt.textContent = preset.label;
+    sel.appendChild(opt);
+  });
+  calcApplyPreset();
+}
+
+function calcApplyPreset() {
+  var kategorie = document.getElementById('calc-kategorie').value;
+  var groesseId = document.getElementById('calc-groesse').value;
+  var preset = CALC_SIZE_PRESETS[kategorie].filter(function(p) { return p.id === groesseId; })[0];
+  if (preset) {
+    document.getElementById('calc-vk').value = preset.vk.toFixed(2);
+  }
+  calcRun();
+}
+
+var CALC_STAFFEL = [1, 10, 25, 50, 100, 250];
+
+function calcRun() {
+  var vk = parseFloat(document.getElementById('calc-vk').value) || 0;
+  var wareneinsatz = parseFloat(document.getElementById('calc-material').value) || 0;
+  var stueckMonat = parseFloat(document.getElementById('calc-stueck-monat').value) || 0;
+  var fixkostenAnteil = stueckMonat > 0 ? (CALC_FIXKOSTEN_MONAT / stueckMonat) : 0;
+
+  var body = document.getElementById('calc-staffel-body');
+  body.innerHTML = '';
+
+  CALC_STAFFEL.forEach(function(menge) {
+    var rabattFaktor = calcRabattFaktor(menge);
+    var vkRabatt = vk * (1 - rabattFaktor);
+    var gewinn = vkRabatt - wareneinsatz - fixkostenAnteil;
+    var marge = vkRabatt > 0 ? (gewinn / vkRabatt) * 100 : 0;
+    var gewinnGesamt = gewinn * menge;
+    var neg = gewinn < 0 ? ' style="color:var(--status-critical);"' : '';
+
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + menge + ' Stück</td>' +
+      '<td class="num">' + (rabattFaktor > 0 ? '−' + (rabattFaktor * 100).toFixed(0) + '%' : '–') + '</td>' +
+      '<td class="num">' + vkRabatt.toFixed(2) + ' €</td>' +
+      '<td class="num">' + wareneinsatz.toFixed(2) + ' €</td>' +
+      '<td class="num">' + fixkostenAnteil.toFixed(2) + ' €</td>' +
+      '<td class="num"' + neg + '>' + gewinn.toFixed(2) + ' €</td>' +
+      '<td class="num"' + neg + '>' + marge.toFixed(1) + ' %</td>' +
+      '<td class="num"' + neg + '>' + gewinnGesamt.toFixed(2) + ' €</td>';
+    body.appendChild(tr);
+  });
+}
+
+calcUpdateSize();
+dbgLog('Script vollstaendig geladen. lsAvailable=' + lsAvailable + ', Trainingstage=' + trainingState.days.length);
+</script>
+</body>
+</html>
