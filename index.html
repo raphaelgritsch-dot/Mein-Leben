@@ -1783,6 +1783,42 @@
 
       <div id="training-days-list"></div>
     </section>
+
+    <section>
+      <h2>Cardio</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">Cardio-Einheiten protokollieren (Steps, Stairmaster, Fahrradfahren) mit automatischer Kalorienschätzung je nach Übung, Dauer, Intensität und Körpergewicht.</p>
+
+      <div class="chart-card" style="margin-bottom:16px;">
+        <div class="train-add-row" style="margin-bottom:10px;">
+          <label style="font-size:12.5px; color:var(--text-secondary);">Körpergewicht (kg):</label>
+          <input type="number" id="cardio-weight-input" class="train-num" placeholder="z.B. 80" step="0.5" min="0" style="width:90px;" onchange="cardioSaveWeight()">
+        </div>
+
+        <div class="train-add-row" style="margin-bottom:8px;">
+          <select id="cardio-type-select" onchange="cardioUpdateFields()" style="padding:7px 10px; background:var(--surface-1); border:1px solid var(--border); color:var(--text-primary); border-radius:6px; font-size:13px;">
+            <option value="steps">Steps / Gehen</option>
+            <option value="stairmaster">Stairmaster</option>
+            <option value="fahrrad">Fahrradfahren</option>
+          </select>
+          <input type="number" id="cardio-duration-input" class="train-num" placeholder="Dauer (Min)" step="1" min="0" style="width:120px;">
+        </div>
+
+        <div class="train-add-row" id="cardio-steps-field" style="margin-bottom:8px;">
+          <input type="number" id="cardio-steps-input" class="train-num" placeholder="Schritte (optional)" step="100" min="0" style="width:160px;">
+        </div>
+
+        <div class="train-add-row" id="cardio-intensity-field" style="margin-bottom:8px; display:none;">
+          <select id="cardio-intensity-select" style="padding:7px 10px; background:var(--surface-1); border:1px solid var(--border); color:var(--text-primary); border-radius:6px; font-size:13px;"></select>
+        </div>
+
+        <div class="train-add-row">
+          <button type="button" class="train-small-btn primary" onclick="addCardioEntry()">Kalorien berechnen & speichern</button>
+        </div>
+        <div id="cardio-result" style="font-size:12.5px; color:var(--text-muted); margin-top:8px;"></div>
+      </div>
+
+      <div id="cardio-log-list"></div>
+    </section>
   </div>
 
   <!-- ============ WELTNEWS TAB ============ -->
@@ -2209,15 +2245,21 @@ function pwGateCheck() {
     if (overlay) { overlay.style.display = 'none'; }
   }
 })();
-document.addEventListener('DOMContentLoaded', function () {
+function pwGateWireUp() {
   var btn = document.getElementById('pw-gate-btn');
   var input = document.getElementById('pw-gate-input');
   if (btn) { btn.addEventListener('click', pwGateCheck); }
   if (input) {
     input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { pwGateCheck(); } });
-    if (document.getElementById('pw-gate-overlay').style.display !== 'none') { input.focus(); }
+    var overlayEl = document.getElementById('pw-gate-overlay');
+    if (overlayEl && overlayEl.style.display !== 'none') { input.focus(); }
   }
-});
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', pwGateWireUp);
+} else {
+  pwGateWireUp();
+}
 
 function showTab(id, btn) {
   document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
@@ -2554,9 +2596,14 @@ EXERCISE_IMAGES[trainNormName('Seitliche Bauchmuskeln')] = '07 Anhänge/uebungen
 function loadTrainingState() {
   var raw = safeLSGet(TRAINING_STORAGE_KEY);
   if (raw) {
-    try { return JSON.parse(raw); } catch (e) {}
+    try {
+      var parsed = JSON.parse(raw);
+      if (!parsed.days) { parsed.days = []; }
+      if (!parsed.cardioLog) { parsed.cardioLog = []; }
+      return parsed;
+    } catch (e) {}
   }
-  return { days: [] };
+  return { days: [], cardioLog: [] };
 }
 function saveTrainingState() { safeLSSet(TRAINING_STORAGE_KEY, JSON.stringify(trainingState)); }
 
@@ -2898,8 +2945,180 @@ function renderTraining() {
 
 renderTraining();
 
+/* ============ CARDIO (Steps / Stairmaster / Fahrradfahren) ============ */
+/* Kalorienschätzung nach Standard-MET-Formel: kcal = MET * 3.5 * Gewicht(kg) / 200 * Minuten.
+   MET-Werte sind grobe, allgemein anerkannte Schätzwerte (Compendium of Physical
+   Activities), keine medizinisch exakte Messung. */
+var CARDIO_WEIGHT_KEY = 'raphiCardioWeight_v1';
+
+var CARDIO_INTENSITIES = {
+  stairmaster: [
+    { value: 'leicht', label: 'Leicht', met: 5 },
+    { value: 'mittel', label: 'Mittel', met: 8 },
+    { value: 'hoch', label: 'Hoch', met: 11 }
+  ],
+  fahrrad: [
+    { value: 'locker', label: 'Locker (<16 km/h)', met: 4 },
+    { value: 'moderat', label: 'Moderat (16–19 km/h)', met: 6 },
+    { value: 'zuegig', label: 'Zügig (19–22 km/h)', met: 8 },
+    { value: 'schnell', label: 'Schnell (>22 km/h)', met: 10 }
+  ]
+};
+var CARDIO_TYPE_LABELS = { steps: 'Steps / Gehen', stairmaster: 'Stairmaster', fahrrad: 'Fahrradfahren' };
+
+function cardioLoadWeight() {
+  var raw = safeLSGet(CARDIO_WEIGHT_KEY);
+  return raw ? parseFloat(raw) : null;
+}
+function cardioSaveWeight() {
+  var input = document.getElementById('cardio-weight-input');
+  var val = parseFloat(input.value);
+  if (val > 0) { safeLSSet(CARDIO_WEIGHT_KEY, String(val)); }
+}
+
+function cardioUpdateFields() {
+  var type = document.getElementById('cardio-type-select').value;
+  var stepsField = document.getElementById('cardio-steps-field');
+  var intensityField = document.getElementById('cardio-intensity-field');
+  var intensitySelect = document.getElementById('cardio-intensity-select');
+
+  if (type === 'steps') {
+    stepsField.style.display = '';
+    intensityField.style.display = 'none';
+  } else {
+    stepsField.style.display = 'none';
+    intensityField.style.display = '';
+    var options = CARDIO_INTENSITIES[type] || [];
+    intensitySelect.innerHTML = options.map(function(o) { return '<option value="' + o.value + '">' + o.label + '</option>'; }).join('');
+  }
+}
+
+function cardioMetFor(type, duration, steps) {
+  if (type === 'steps') { return 3.5; }
+  var options = CARDIO_INTENSITIES[type] || [];
+  var sel = document.getElementById('cardio-intensity-select').value;
+  var match = options.filter(function(o) { return o.value === sel; })[0];
+  return match ? match.met : options[0].met;
+}
+
+function addCardioEntry() {
+  dbgLog('addCardioEntry() aufgerufen');
+  var type = document.getElementById('cardio-type-select').value;
+  var durationInput = document.getElementById('cardio-duration-input');
+  var stepsInput = document.getElementById('cardio-steps-input');
+  var resultEl = document.getElementById('cardio-result');
+  var weight = cardioLoadWeight();
+
+  if (!weight) {
+    resultEl.textContent = 'Bitte zuerst dein Körpergewicht oben eintragen.';
+    resultEl.style.color = 'var(--status-critical)';
+    return;
+  }
+
+  var duration = parseFloat(durationInput.value);
+  var steps = type === 'steps' ? parseInt(stepsInput.value, 10) : null;
+
+  if ((!duration || duration <= 0) && type === 'steps' && steps > 0) {
+    duration = steps / 100; /* Schätzung: ~100 Schritte/Min. */
+  }
+  if (!duration || duration <= 0) {
+    resultEl.textContent = 'Bitte eine Dauer (Minuten) oder bei Steps eine Schrittzahl eintragen.';
+    resultEl.style.color = 'var(--status-critical)';
+    return;
+  }
+
+  var met = cardioMetFor(type, duration, steps);
+  var kcal = met * 3.5 * weight / 200 * duration;
+
+  var entry = {
+    id: trainNewId('cardio'),
+    datum: new Date().toISOString().slice(0, 10),
+    type: type,
+    dauerMin: Math.round(duration * 10) / 10,
+    steps: steps || null,
+    intensitaet: type !== 'steps' ? document.getElementById('cardio-intensity-select').value : null,
+    kalorien: Math.round(kcal)
+  };
+  trainingState.cardioLog.push(entry);
+  saveTrainingState();
+
+  durationInput.value = '';
+  stepsInput.value = '';
+  resultEl.textContent = 'Gespeichert: ca. ' + entry.kalorien + ' kcal (' + CARDIO_TYPE_LABELS[type] + ', ' + entry.dauerMin + ' Min.)';
+  resultEl.style.color = 'var(--status-good)';
+  dbgLog('addCardioEntry: ' + entry.kalorien + ' kcal gespeichert, Eintraege jetzt: ' + trainingState.cardioLog.length);
+  renderCardioLog();
+}
+
+function deleteCardioEntry(id) {
+  trainingState.cardioLog = trainingState.cardioLog.filter(function(e) { return e.id !== id; });
+  saveTrainingState();
+  renderCardioLog();
+}
+
+function renderCardioLog() {
+  var list = document.getElementById('cardio-log-list');
+  if (!list) { return; }
+  list.innerHTML = '';
+
+  if (!trainingState.cardioLog.length) {
+    var hint = document.createElement('div');
+    hint.className = 'train-empty-hint';
+    hint.textContent = 'Noch keine Cardio-Einheiten protokolliert.';
+    list.appendChild(hint);
+    return;
+  }
+
+  var card = document.createElement('div');
+  card.className = 'chart-card';
+  var table = document.createElement('table');
+  table.className = 'train-sets-table';
+  var thead = document.createElement('thead');
+  thead.innerHTML = '<tr><th>Datum</th><th>Art</th><th>Dauer</th><th>Details</th><th>Kalorien</th><th></th></tr>';
+  table.appendChild(thead);
+  var tbody = document.createElement('tbody');
+
+  trainingState.cardioLog.slice().reverse().forEach(function(entry) {
+    var tr = document.createElement('tr');
+    var detail = '';
+    if (entry.type === 'steps' && entry.steps) { detail = entry.steps + ' Schritte'; }
+    else if (entry.intensitaet) {
+      var opts = CARDIO_INTENSITIES[entry.type] || [];
+      var m = opts.filter(function(o) { return o.value === entry.intensitaet; })[0];
+      detail = m ? m.label : entry.intensitaet;
+    }
+    var tdDel = document.createElement('td');
+    var delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'train-small-btn danger';
+    delBtn.textContent = '×';
+    delBtn.style.padding = '3px 9px';
+    delBtn.onclick = function() { deleteCardioEntry(entry.id); };
+    tdDel.appendChild(delBtn);
+    tr.innerHTML = '<td>' + trainEsc(entry.datum) + '</td><td>' + trainEsc(CARDIO_TYPE_LABELS[entry.type] || entry.type) + '</td><td>' + entry.dauerMin + ' Min.</td><td>' + trainEsc(detail) + '</td><td>' + entry.kalorien + ' kcal</td>';
+    tr.appendChild(tdDel);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  card.appendChild(table);
+  list.appendChild(card);
+}
+
+function cardioInit() {
+  var w = cardioLoadWeight();
+  var weightInput = document.getElementById('cardio-weight-input');
+  if (weightInput && w) { weightInput.value = w; }
+  cardioUpdateFields();
+  renderCardioLog();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', cardioInit);
+} else {
+  cardioInit();
+}
+
 /* ---- Datensicherung: Export/Import des lokalen Fortschritts ---- */
-var BACKUP_KEYS = ['raphiXpState_v2', 'raphiTodoState_v1', 'raphiHabitState_v1', 'raphiTrainingLog_v1'];
+var BACKUP_KEYS = ['raphiXpState_v2', 'raphiTodoState_v1', 'raphiHabitState_v1', 'raphiTrainingLog_v1', 'raphiCardioWeight_v1'];
 
 function exportProgress() {
   var backup = { erstellt: new Date().toISOString(), daten: {} };
