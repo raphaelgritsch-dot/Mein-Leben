@@ -262,6 +262,35 @@
   }
   .vision-note b { color: var(--text-primary); }
 
+  /* Koerper-Check-in */
+  .koerper-foto-field { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; color: var(--text-muted); }
+  .koerper-foto-field input[type="file"] { font-size: 11.5px; color: var(--text-secondary); max-width: 190px; }
+  .koerper-status {
+    margin-top: 10px; padding: 8px 12px; border-radius: 8px; font-size: 12.5px; border: 1px solid transparent;
+  }
+  .koerper-status.ok { background: color-mix(in srgb, var(--status-good) 15%, transparent); color: var(--status-good); border-color: var(--status-good); }
+  .koerper-status.error { background: color-mix(in srgb, var(--status-critical) 15%, transparent); color: var(--status-critical); border-color: var(--status-critical); }
+  .koerper-empty-hint { font-size: 12.5px; color: var(--text-muted); margin: 0; }
+  .koerper-trend-note { font-size: 12.5px; color: var(--text-secondary); margin: 10px 0 0; }
+  .koerper-compare-row { display: flex; flex-wrap: wrap; gap: 18px; }
+  .koerper-compare-pair { display: flex; align-items: center; gap: 10px; }
+  .koerper-compare-pair img {
+    width: 130px; height: 170px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); cursor: zoom-in;
+  }
+  .koerper-compare-arrow { font-size: 18px; color: var(--text-muted); }
+  .koerper-compare-caption { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 4px; }
+  .koerper-timeline-item {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+  }
+  .koerper-timeline-main { flex: 1; min-width: 160px; }
+  .koerper-timeline-date { font-size: 12.5px; color: var(--text-muted); margin-bottom: 2px; }
+  .koerper-timeline-values { font-size: 14px; color: var(--text-primary); font-weight: 600; }
+  .koerper-timeline-photos { display: flex; gap: 6px; }
+  .koerper-timeline-photos img {
+    width: 54px; height: 54px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); cursor: zoom-in;
+  }
+
   /* Weltnews */
   .news-refresh-note {
     background: color-mix(in srgb, var(--series-yellow) 12%, var(--surface-1));
@@ -718,8 +747,26 @@
   .train-sets-table th { text-align: left; color: var(--text-muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em; padding: 4px 6px; }
   .train-sets-table td { padding: 6px; border-top: 1px solid var(--grid); color: var(--text-secondary); }
   .train-empty-hint { font-size: 12.5px; color: var(--text-muted); padding: 4px 6px 10px; }
-  .train-progress-box { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; padding: 6px 6px 10px; color: var(--text-secondary); }
+  .train-progress-box { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; padding: 6px 6px 10px; color: var(--text-secondary); align-items: center; }
   .train-progress-item { white-space: nowrap; }
+  .train-pr-photo-wrap { display: inline-flex; align-items: center; gap: 6px; }
+  .train-pr-photo-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); cursor: zoom-in; }
+  .train-pr-photo-btn { padding: 5px 10px; font-size: 11px; }
+  .train-pr-photo-remove {
+    background: transparent; border: 1px solid var(--status-critical); color: var(--status-critical);
+    border-radius: 50%; width: 20px; height: 20px; line-height: 1; font-size: 13px; cursor: pointer;
+    padding: 0; font-family: inherit; flex-shrink: 0;
+  }
+  .train-pr-photo-hint {
+    background: color-mix(in srgb, var(--series-yellow) 18%, transparent); color: var(--series-yellow);
+    border: 1px solid var(--series-yellow); border-radius: 20px; padding: 3px 10px; font-size: 11px;
+    cursor: pointer; font-family: inherit;
+  }
+  .train-pr-photo-lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center;
+    justify-content: center; z-index: 9999; cursor: zoom-out; padding: 20px;
+  }
+  .train-pr-photo-lightbox img { max-width: 95vw; max-height: 95vh; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
   .train-trend-up { color: var(--status-good, #4caf7d); font-weight: 600; }
   .train-trend-down { color: var(--status-critical); font-weight: 600; }
   .train-trend-same { color: var(--text-muted); }
@@ -879,7 +926,7 @@
     <div class="eyebrow">Raphi — persönliches Dashboard</div>
     <h1>Roter Faden</h1>
     <p>Studium abschließen. Beruflich und unternehmerisch erfolgreich sein. Fundierte Entscheidungen treffen. Finanziell unabhängig werden.</p>
-    <div class="updated">Stand: 26.07.2026 — statischer Schnappschuss, kein Live-Sync. Sag "aktualisiere mein Dashboard" für eine neue Version.</div>
+    <div class="updated">Stand: 27.07.2026 — statischer Schnappschuss, kein Live-Sync. Sag "aktualisiere mein Dashboard" für eine neue Version.</div>
   </header>
 
   <nav class="tabs">
@@ -890,6 +937,7 @@
     <button class="tab-btn" onclick="showTab('persoenlichkeit', this)">Persönlichkeit</button>
     <button class="tab-btn" onclick="showTab('nadelzwirn', this)">Nadel & Zwirn</button>
     <button class="tab-btn" onclick="showTab('training', this)">Training</button>
+    <button class="tab-btn" onclick="showTab('koerpercheckin', this)">Körper-Check-in</button>
   </nav>
 
   <div id="site-skyline">
@@ -1303,16 +1351,27 @@
 
     <section>
       <h2>Portfolio-Kennzahlen</h2>
+
+      <div class="chart-card" id="kurse-panel" style="margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <button type="button" id="kurse-update-btn" class="tab-btn" style="cursor:pointer;" onclick="kurseUpdateAll()">Kurse aktualisieren</button>
+          <span id="kurse-status" class="chart-sub" style="margin:0;">Noch nicht abgerufen.</span>
+        </div>
+        <p class="chart-sub" id="kurse-hinweis" style="margin-top:10px;">
+          Automatische Kursabfrage über die kostenlose, keylose Yahoo-Finance-Chart-API, geladen über einen öffentlichen CORS-Proxy (allorigins.win, Fallback codetabs.com) — beides Drittanbieter-Abhängigkeiten ohne Verfügbarkeitsgarantie, können jederzeit ausfallen oder blockieren. Kurse sind Vortages-/verzögerte Tagesschlusskurse, keine Echtzeitdaten. Die Δ-Spalte und die Wert-Fortschreibung beziehen sich auf den zuletzt in diesem Browser gespeicherten Referenzkurs (localStorage), nicht auf den ursprünglichen Kaufkurs. Die Wert-Fortschreibung skaliert den zuletzt bekannten Euro-Wert rein mit der Kursbewegung in der jeweiligen Landeswährung (USD/HKD-Positionen: Wechselkurseffekte werden dabei NICHT berücksichtigt) — sie ist damit eine Näherung, kein exakter Depotwert. Beim allerersten Klick wird nur ein Referenzkurs gesetzt, noch keine Wertänderung berechnet.
+        </p>
+      </div>
+
       <div class="stat-row">
         <div class="stat-tile">
           <div class="label">Kaufwert gesamt</div>
-          <div class="value">2.012 €</div>
+          <div class="value" id="kurse-kaufwert">2.012 €</div>
           <div class="sub">12 Positionen, Kauf 01.01.2026</div>
         </div>
         <div class="stat-tile">
           <div class="label">Aktueller Wert</div>
-          <div class="value">~1.997 €</div>
-          <div class="sub">Δ ‑0,7% seit Kauf · ‑0,6% seit 25.07.</div>
+          <div class="value" id="kurse-aktueller-wert">~1.976 €</div>
+          <div class="sub" id="kurse-aktueller-wert-sub">Δ ‑1,8% seit Kauf · ‑1,1% seit 26.07.</div>
         </div>
         <div class="stat-tile">
           <div class="label">Positionen</div>
@@ -1331,18 +1390,18 @@
       <h2>Positionen nach Volumen</h2>
       <div class="chart-card">
         <p class="chart-sub">Aktueller Wert je Position, farbcodiert nach Land</p>
-        <div class="rank-bar-row"><span class="name">Siemens Energy</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:100%; background:var(--series-aqua);"></div></div><span class="val">295 €</span></div>
-        <div class="rank-bar-row"><span class="name">PayPal</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:84.1%; background:var(--series-blue);"></div></div><span class="val">248 €</span></div>
-        <div class="rank-bar-row"><span class="name">China Mobile</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:74.2%; background:var(--series-violet);"></div></div><span class="val">219 €</span></div>
-        <div class="rank-bar-row"><span class="name">BYD</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:68.5%; background:var(--series-violet);"></div></div><span class="val">202 €</span></div>
-        <div class="rank-bar-row"><span class="name">UnitedHealth</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:56.3%; background:var(--series-blue);"></div></div><span class="val">166 €</span></div>
-        <div class="rank-bar-row"><span class="name">Apple</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:51.5%; background:var(--series-blue);"></div></div><span class="val">152 €</span></div>
-        <div class="rank-bar-row"><span class="name">Lam Research</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:48.8%; background:var(--series-blue);"></div></div><span class="val">144 €</span></div>
-        <div class="rank-bar-row"><span class="name">Unklar (DE Software)</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:47.8%; background:var(--series-aqua);"></div></div><span class="val">141 €</span></div>
-        <div class="rank-bar-row"><span class="name">Unklar (CN Transport)</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:45.8%; background:var(--series-violet);"></div></div><span class="val">135 €</span></div>
-        <div class="rank-bar-row"><span class="name">BMW</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:38.6%; background:var(--series-aqua);"></div></div><span class="val">114 €</span></div>
-        <div class="rank-bar-row"><span class="name">Amazon</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:37.6%; background:var(--series-blue);"></div></div><span class="val">111 €</span></div>
-        <div class="rank-bar-row"><span class="name">Microsoft</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:23.7%; background:var(--series-blue);"></div></div><span class="val">70 €</span></div>
+        <div class="rank-bar-row" data-pos="siemens-energy"><span class="name">Siemens Energy</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:100%; background:var(--series-aqua);"></div></div><span class="val">302 €</span></div>
+        <div class="rank-bar-row" data-pos="paypal"><span class="name">PayPal</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:76.2%; background:var(--series-blue);"></div></div><span class="val">230 €</span></div>
+        <div class="rank-bar-row" data-pos="china-mobile"><span class="name">China Mobile</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:72.5%; background:var(--series-violet);"></div></div><span class="val">219 €</span></div>
+        <div class="rank-bar-row" data-pos="byd"><span class="name">BYD</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:66.9%; background:var(--series-violet);"></div></div><span class="val">202 €</span></div>
+        <div class="rank-bar-row" data-pos="unitedhealth"><span class="name">UnitedHealth</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:54.6%; background:var(--series-blue);"></div></div><span class="val">165 €</span></div>
+        <div class="rank-bar-row" data-pos="apple"><span class="name">Apple</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:50.3%; background:var(--series-blue);"></div></div><span class="val">152 €</span></div>
+        <div class="rank-bar-row" data-pos="teamviewer"><span class="name">TeamViewer (DE Software)</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:46.7%; background:var(--series-aqua);"></div></div><span class="val">141 €</span></div>
+        <div class="rank-bar-row" data-pos="anhui"><span class="name">Anhui Expressway (CN Transport)</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:44.7%; background:var(--series-violet);"></div></div><span class="val">135 €</span></div>
+        <div class="rank-bar-row" data-pos="lam-research"><span class="name">Lam Research</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:44.4%; background:var(--series-blue);"></div></div><span class="val">134 €</span></div>
+        <div class="rank-bar-row" data-pos="bmw"><span class="name">BMW</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:37.7%; background:var(--series-aqua);"></div></div><span class="val">114 €</span></div>
+        <div class="rank-bar-row" data-pos="amazon"><span class="name">Amazon</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:37.1%; background:var(--series-blue);"></div></div><span class="val">112 €</span></div>
+        <div class="rank-bar-row" data-pos="microsoft"><span class="name">Microsoft</span><div class="rank-bar-track"><div class="rank-bar-fill" style="width:23.2%; background:var(--series-blue);"></div></div><span class="val">70 €</span></div>
         <div class="ring-legend" style="justify-content:flex-start; margin-top:14px;">
           <span><span class="dot" style="background:var(--series-blue)"></span>USA (45%)</span>
           <span><span class="dot" style="background:var(--series-aqua)"></span>Deutschland (27%)</span>
@@ -1403,21 +1462,22 @@
             <tr><th>Unternehmen</th><th>Land</th><th>Sektor</th><th class="num">Wert</th><th class="num">Δ</th><th>Einschätzung</th></tr>
           </thead>
           <tbody>
-            <tr><td>PayPal</td><td>US</td><td>Fintech</td><td class="num">248 €</td><td class="num delta-pos">+8,2%</td><td>Board evaluiert mit Goldman/Evercore Alternativen</td></tr>
-            <tr><td>Apple</td><td>US</td><td>Tech</td><td class="num">152 €</td><td class="num delta-pos">+18,7%</td><td>Stabil nahe Rekordhoch, Zahlen 30.07.</td></tr>
-            <tr><td>Amazon</td><td>US</td><td>E-Commerce</td><td class="num">111 €</td><td class="num delta-neg">‑8,6%</td><td>Leicht rückläufig, Zahlen 30.07.</td></tr>
-            <tr><td>BMW</td><td>DE</td><td>Automobile</td><td class="num">114 €</td><td class="num delta-neg">‑34,6%</td><td>Nahe 52-Wochen-Tief vor Halbjahreszahlen</td></tr>
-            <tr><td>Microsoft</td><td>US</td><td>Software</td><td class="num">70 €</td><td class="num delta-neg">‑27,5%</td><td>Nahe 1-Jahres-Tief, Zahlen 29.07. als Katalysator erwartet</td></tr>
-            <tr><td>Unklar (A0M4LC)</td><td>CN</td><td>Transport</td><td class="num">135 €</td><td class="num">n/a</td><td>Nicht identifiziert</td></tr>
-            <tr><td>Siemens Energy</td><td>DE</td><td>Energie</td><td class="num">295 €</td><td class="num delta-pos">+3,0%</td><td>Leicht rückläufig, UBS-Kursziel 210 € bleibt</td></tr>
-            <tr><td>Lam Research</td><td>US</td><td>Halbleiter</td><td class="num">144 €</td><td class="num delta-pos">+20,3%</td><td>Rücksetzer nach starkem Lauf, Zahlen 29.07.</td></tr>
-            <tr><td>UnitedHealth</td><td>US</td><td>Healthcare</td><td class="num">166 €</td><td class="num delta-pos">+13,0%</td><td>Leicht rückläufig nach Rekordhoch</td></tr>
-            <tr><td>BYD</td><td>CN</td><td>Automobile</td><td class="num">202 €</td><td class="num delta-neg">‑7,4%</td><td>Stabil, Kursziel weiter deutlich höher</td></tr>
-            <tr><td>Unklar (A2YN90)</td><td>DE</td><td>Software</td><td class="num">141 €</td><td class="num">n/a</td><td>Nicht identifiziert</td></tr>
-            <tr><td>China Mobile</td><td>CN</td><td>Telekom</td><td class="num">219 €</td><td class="num delta-pos">+2,1%</td><td>Defensiv, 6,3% Dividende</td></tr>
+            <tr data-pos="paypal"><td>PayPal</td><td>US</td><td>Fintech</td><td class="num">230 €</td><td class="num delta-pos">+0,3%</td><td>Board hält Übernahmealternativen offen, Zahlen 28.07.</td></tr>
+            <tr data-pos="apple"><td>Apple</td><td>US</td><td>Tech</td><td class="num">152 €</td><td class="num delta-pos">+18,5%</td><td>Stabil nahe Rekordhoch, Zahlen 30.07.</td></tr>
+            <tr data-pos="amazon"><td>Amazon</td><td>US</td><td>E-Commerce</td><td class="num">112 €</td><td class="num delta-neg">‑7,7%</td><td>Leicht erholt, Zahlen 30.07.</td></tr>
+            <tr data-pos="bmw"><td>BMW</td><td>DE</td><td>Automobile</td><td class="num">114 €</td><td class="num delta-neg">‑34,7%</td><td>Nahe 52-Wochen-Tief vor Halbjahreszahlen</td></tr>
+            <tr data-pos="microsoft"><td>Microsoft</td><td>US</td><td>Software</td><td class="num">70 €</td><td class="num delta-neg">‑27,5%</td><td>Nahe 1-Jahres-Tief, Zahlen 29.07. als Katalysator erwartet</td></tr>
+            <tr data-pos="anhui"><td>Anhui Expressway (A0M4LC)</td><td>CN</td><td>Transport</td><td class="num">135 €</td><td class="num">n/a</td><td>Jetzt identifiziert: chinesischer Autobahnbetreiber (H-Aktie ~16,2 HKD)</td></tr>
+            <tr data-pos="siemens-energy"><td>Siemens Energy</td><td>DE</td><td>Energie</td><td class="num">302 €</td><td class="num delta-pos">+5,3%</td><td>Erholt nach Rücksetzer, S&amp;P-Upgrade auf BBB+ bestätigt</td></tr>
+            <tr data-pos="lam-research"><td>Lam Research</td><td>US</td><td>Halbleiter</td><td class="num">134 €</td><td class="num delta-pos">+12,0%</td><td>Rücksetzer, Zahlen 29.07. mit "Beat and Raise" erwartet</td></tr>
+            <tr data-pos="unitedhealth"><td>UnitedHealth</td><td>US</td><td>Healthcare</td><td class="num">165 €</td><td class="num delta-pos">+12,5%</td><td>Leicht rückläufig nach Rekordhoch</td></tr>
+            <tr data-pos="byd"><td>BYD</td><td>CN</td><td>Automobile</td><td class="num">202 €</td><td class="num delta-neg">‑7,5%</td><td>Stabil, Kursziel weiter deutlich höher</td></tr>
+            <tr data-pos="teamviewer"><td>TeamViewer (A2YN90)</td><td>DE</td><td>Software</td><td class="num">141 €</td><td class="num">n/a</td><td>Jetzt identifiziert: Remote-Access-Software, Kurs ~5,84 €, Tagesplus +3,7%</td></tr>
+            <tr data-pos="china-mobile"><td>China Mobile</td><td>CN</td><td>Telekom</td><td class="num">219 €</td><td class="num delta-pos">+2,1%</td><td>Defensiv, 6,3% Dividende, keine neuere Kursmeldung als 10.07. verfügbar</td></tr>
           </tbody>
         </table>
       </div>
+      <p class="chart-sub" id="kurse-einschaetzung-hinweis" style="margin-top:8px; display:none;">Hinweis: Der Einschätzungs-Text je Position bleibt manuell/redaktionell und wird durch die automatische Kursabfrage nicht verändert — nur Wert und Δ werden live aktualisiert.</p>
     </section>
 
     <section>
@@ -1480,85 +1540,101 @@
 
   <aside class="portfolio-sidebar">
     <h3>Portfolio-News</h3>
-    <p class="chart-sub">Aktuelle Meldungen zu deinen Positionen, Stand 26.07.2026 — Anlagestrategie mittel- bis langfristig, keine Anlageberatung</p>
+    <p class="chart-sub">Aktuelle Meldungen zu deinen Positionen, Stand 27.07.2026 — Anlagestrategie mittel- bis langfristig, keine Anlageberatung</p>
 
     <details class="stock-news-item">
       <summary>UnitedHealth <span class="arrow">▸</span></summary>
-      <div class="snippet">Stand 25.07.: Kurs ~420 USD, leicht unter dem jüngsten Hoch (bis 429 USD), nach starkem Q2 (Umsatz 112 Mrd. USD, Gewinnprognose auf 19,50–20,00 USD/Aktie angehoben). Diskussion, ob die Aktie auf 500 USD zulaufen kann.
-        <br><a href="https://finance.yahoo.com/markets/stocks/articles/unitedhealth-stock-headed-500-121226625.html" target="_blank">Quelle: Yahoo Finance</a>
-        <br><span class="action-tag halten">Halten</span> — fundamental stark, aber nach dem Kurssprung schon viel eingepreist<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      <div class="snippet">Stand 27.07.: Kurs ~420,12 USD, damit fast unverändert zum Vortag, weiterhin nahe dem jüngsten Hoch (bis 429 USD) nach starkem Q2 (Umsatz 112 Mrd. USD, Gewinnprognose auf 19,50–20,00 USD/Aktie angehoben).
+        <br><a href="https://www.gurufocus.com/news/8970143/unitedhealth-group-inc-unh-stock-up-35-and-still-undervalued-gf-score-86100" target="_blank">Quelle: GuruFocus</a>
+        <br><span class="action-tag halten">Halten</span> — fundamental stark, aber nach dem Kurssprung schon viel eingepreist<span class="action-time">Aktualisiert: 27.07.2026 15:10</span>
       </div>
     </details>
 
     <details class="stock-news-item">
       <summary>PayPal <span class="arrow">▸</span></summary>
-      <div class="snippet">Stand 26.07.: Board hat das 60,50-USD-Angebot als "unzureichend" abgelehnt und arbeitet inzwischen mit Goldman Sachs und Evercore an Alternativen, inklusive möglichem Verkauf oder Aufspaltung. Kurs hält sich stabil nahe dem Angebotsniveau.
-        <br><a href="https://www.bloomberg.com/news/articles/2026-07-15/stripe-advent-offer-to-buy-paypal-for-53-billion-reuters-says" target="_blank">Quelle: Bloomberg</a>
-        <br><span class="action-tag beobachten">Beobachten</span> — Ausgang der Alternativen-Prüfung abwarten, vor Klarheit nicht nachkaufen<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      <div class="snippet">Stand 27.07.: Kurs auf 56,08 USD gefallen (Spanne 55,22–56,48 USD), damit klar unter dem zuvor abgelehnten 60,50-USD-Angebot von Stripe/Advent. Board weiterhin mit Goldman Sachs und Evercore an Alternativen dran. Q2-Zahlen morgen (28.07.) als nächster Katalysator.
+        <br><a href="https://finance.yahoo.com/quote/PYPL/" target="_blank">Quelle: Yahoo Finance</a>
+        <br><span class="action-tag beobachten">Beobachten</span> — Kurs jetzt unter Angebotsniveau, Zahlen 28.07. und Ausgang der Alternativen-Prüfung abwarten<span class="action-time">Aktualisiert: 27.07.2026 15:10</span>
       </div>
     </details>
 
     <details class="stock-news-item">
       <summary>Apple <span class="arrow">▸</span></summary>
-      <div class="snippet">Stand 25.07.: Kurs stabil bei ~333,74 USD, hält sich nahe dem 52-Wochen-Hoch. Q3-Zahlen am 30.07. (letzte PK von Tim Cook als CEO). Weiterhin als leicht überbewertet, aber mit starkem GF-Score eingestuft.
-        <br><a href="https://www.benzinga.com/trading-ideas/long-ideas/26/07/60550200/apple-unitedhealth-group-and-a-basic-material-stock-cnbcs-final-trades" target="_blank">Quelle: Benzinga</a>
-        <br><span class="action-tag halten">Halten</span> — nahe Rekordhoch, Bewertung ambitioniert, Zahlen am 30.07. abwarten<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      <div class="snippet">Stand 27.07.: Kurs weiter stabil bei ~333,02 USD, hält sich nahe dem Allzeithoch (335,75 USD). Q3-Zahlen am 30.07. (letzte PK von Tim Cook als CEO). 29 von 33 Analysten empfehlen Kauf.
+        <br><a href="https://www.investing.com/equities/apple-computer-inc" target="_blank">Quelle: Investing.com</a>
+        <br><span class="action-tag halten">Halten</span> — nahe Rekordhoch, Bewertung ambitioniert, Zahlen am 30.07. abwarten<span class="action-time">Aktualisiert: 27.07.2026 15:10</span>
       </div>
     </details>
 
     <details class="stock-news-item">
       <summary>Amazon <span class="arrow">▸</span></summary>
-      <div class="snippet">Stand 25.07.: Kurs ~232 USD, leicht rückläufig. Q2-Zahlen am 30.07. Capex 2026 ca. 200 Mrd. USD für KI/Rechenzentren. Analystenkonsens weiterhin klar positiv: 57 von 60 Kaufempfehlungen, Kursziel ~312,52 USD.
-        <br><a href="https://www.boerse-express.com/news/articles/amazon-aktie-200-milliarden-capex-2026-fuer-ki-929010" target="_blank">Quelle: Börse Express</a>
-        <br><span class="action-tag nachkaufen">Nachkaufen</span> — Rücksetzer bei klar positivem Konsens, für langfristige Position geeignet<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      <div class="snippet">Stand 27.07.: Kurs auf 234,19 USD erholt (Vortag 232,11 USD). Q2-Zahlen am 30.07. Capex 2026 ca. 200 Mrd. USD für KI/Rechenzentren. Analystenkonsens weiterhin klar positiv: 63 Kaufempfehlungen, Kursziel ~313 USD.
+        <br><a href="https://www.investing.com/equities/amazon-com-inc" target="_blank">Quelle: Investing.com</a>
+        <br><span class="action-tag nachkaufen">Nachkaufen</span> — leichte Erholung bei klar positivem Konsens, für langfristige Position geeignet<span class="action-time">Aktualisiert: 27.07.2026 15:10</span>
       </div>
     </details>
 
     <details class="stock-news-item">
       <summary>BMW <span class="arrow">▸</span></summary>
-      <div class="snippet">Stand 25.07.: Kurs 56,86 €, direkt am 52-Wochen-Tief (56,40 €), −37% YTD. H1: 1,15 Mio. Auslieferungen (−4,2%), Europa +5,4%, USA +3,9%, China −30%. Halbjahresbericht offiziell am 30.07. 4 von 5 Analysten raten trotzdem zum Kauf.
+      <div class="snippet">Stand 27.07.: Kurs 56,82 €, weiterhin nahe 52-Wochen-Tief (56,70 €), −35,5% im Jahresverlauf. Neuer CEO Milan Nedeljković verschärft laut Berichten den Sparkurs im Konzern. Halbjahresbericht offiziell am 30.07.
         <br><a href="https://www.boerse-express.com/news/articles/bmw-aktie-halbjahresbericht-am-30-juli-932167" target="_blank">Quelle: Börse Express</a>
-        <br><span class="action-tag beobachten">Beobachten</span> — fundamental unter Druck, Halbjahreszahlen 30.07. abwarten<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+        <br><span class="action-tag beobachten">Beobachten</span> — fundamental unter Druck, Halbjahreszahlen 30.07. abwarten<span class="action-time">Aktualisiert: 27.07.2026 15:10</span>
       </div>
     </details>
 
     <details class="stock-news-item">
       <summary>Microsoft <span class="arrow">▸</span></summary>
-      <div class="snippet">Stand 25.07.: Aktie nahe 1-Jahres-Tief, −20% YTD (zeitweise −35% vom Allzeithoch). Grund: Sorge um Rendite der KI-Capex (190 Mrd. USD 2026, +61% ggü. Vorjahr). Q4-Zahlen am 29.07. gelten als möglicher Wendepunkt, falls Azure-Wachstum überzeugt. Bewertung mit unter 20x Gewinn günstig (5-Jahres-Schnitt: 30x).
+      <div class="snippet">Stand 27.07.: Kurs bei 381,70 USD, damit gegenüber dem Vortag praktisch unverändert, weiter nahe 1-Jahres-Tief. Grund bleibt die Sorge um Rendite der KI-Capex (190 Mrd. USD 2026, +61% ggü. Vorjahr). Q4-Zahlen am 29.07. gelten als möglicher Wendepunkt, falls Azure-Wachstum überzeugt.
         <br><a href="https://www.fool.com/investing/2026/07/25/microsoft-stock-is-near-a-1-year-low-that-could/" target="_blank">Quelle: The Motley Fool</a>
-        <br><span class="action-tag halten">Halten</span> — Cloud-Geschäft intakt, Zahlen 29.07. als möglicher Wendepunkt abwarten<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+        <br><span class="action-tag halten">Halten</span> — Cloud-Geschäft intakt, Zahlen 29.07. als möglicher Wendepunkt abwarten<span class="action-time">Aktualisiert: 27.07.2026 15:10</span>
       </div>
     </details>
 
     <details class="stock-news-item">
       <summary>Siemens Energy <span class="arrow">▸</span></summary>
-      <div class="snippet">Stand 25.07.: Kurs ~150,43 €, über die letzten 30 Tage −7,2% (Monat −9,6%), nach dem starken Lauf der letzten Wochen eine Verschnaufpause. S&amp;P-Rating-Upgrade auf BBB+ und erhöhte Kursziele (JPMorgan 235€, BofA 260€) bleiben bestehen. Q3-Zahlen am 05.08.
-        <br><a href="https://www.boerse.de/aktien/Siemens-Energy-Aktie/DE000ENER6Y0" target="_blank">Quelle: boerse.de</a>
-        <br><span class="action-tag nachkaufen">Nachkaufen</span> — Rücksetzer nach starkem Lauf, Kursziele weiterhin deutlich über aktuellem Niveau<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      <div class="snippet">Stand 27.07.: Kurs auf ~153,80 € erholt (Tagesplus +1,6%, Wochenplus +3,56%), nach der Verschnaufpause der Vorwoche wieder im Aufwind. Im Jahresverlauf 2026 bereits +27,9%. S&amp;P-Rating-Upgrade auf BBB+ und erhöhte Kursziele (JPMorgan 235€, BofA 260€) bleiben bestehen. Q3-Zahlen am 05.08.
+        <br><a href="https://www.finanzen.net/nachricht/aktien/siemens_energy-aktie-kursbewegung-27-07-2026-11210117" target="_blank">Quelle: finanzen.net</a>
+        <br><span class="action-tag nachkaufen">Nachkaufen</span> — Erholung bestätigt, Kursziele weiterhin deutlich über aktuellem Niveau<span class="action-time">Aktualisiert: 27.07.2026 15:10</span>
       </div>
     </details>
 
     <details class="stock-news-item">
       <summary>Lam Research <span class="arrow">▸</span></summary>
-      <div class="snippet">Stand 26.07.: Aktie weiterhin +114% seit Jahresbeginn, zuletzt etwas schwankend zwischen 301,68 und 319,70 USD. Morgan Stanley erwartet "Beat and Raise" bei den Zahlen am 29.07. Kursziele weit gestreut (300–500 USD).
-        <br><a href="https://www.cnbc.com/quotes/LRCX" target="_blank">Quelle: CNBC</a>
-        <br><span class="action-tag beobachten">Beobachten</span> — stark gelaufen, Zahlen am 29.07. vor Aufstockung abwarten<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      <div class="snippet">Stand 27.07.: Kurs auf 284,20 USD zurückgefallen (Vortag 305,21 USD, Tagesspanne 281,26–309,24 USD) — deutlicherer Rücksetzer vor den Zahlen. Morgan Stanley erwartet weiterhin "Beat and Raise" am 29.07. Kursziele bleiben weit gestreut (220–500 USD, Schnitt 372 USD).
+        <br><a href="https://www.investing.com/equities/lam-research-corp" target="_blank">Quelle: Investing.com</a>
+        <br><span class="action-tag beobachten">Beobachten</span> — spürbarer Rücksetzer, Zahlen am 29.07. vor Aufstockung abwarten<span class="action-time">Aktualisiert: 27.07.2026 15:10</span>
       </div>
     </details>
 
     <details class="stock-news-item">
       <summary>BYD <span class="arrow">▸</span></summary>
-      <div class="snippet">Stand 25.07.: Kurs stabil bei 88,65 HKD (~9,76 €), H1-Auslandsverkäufe weiterhin stark (789.000 Fahrzeuge, +68% ggü. H1 2025). 52-Wochen-Spanne 71,40–132,00 HKD, Analysten-Kursziel im Schnitt deutlich höher als aktuelles Niveau.
-        <br><a href="https://www.investing.com/equities/byd-co." target="_blank">Quelle: Investing.com</a>
-        <br><span class="action-tag nachkaufen">Nachkaufen</span> — starkes operatives Auslandswachstum, Kursziel klar über aktuellem Niveau<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+      <div class="snippet">Stand 27.07. (Montag, nach dem Wochenende): Kurs praktisch unverändert bei 88,55 HKD (~9,75 €). H1-Auslandsverkäufe weiterhin stark (789.000 Fahrzeuge, +68% ggü. H1 2025). 52-Wochen-Spanne 71,40–132,00 HKD, Analysten-Kursziel im Schnitt deutlich höher als aktuelles Niveau.
+        <br><a href="https://www.finanzen.ch/nachrichten/aktien/byd-aktie-kursbewegung-27-07-2026-1031803657" target="_blank">Quelle: finanzen.ch</a>
+        <br><span class="action-tag nachkaufen">Nachkaufen</span> — starkes operatives Auslandswachstum, Kursziel klar über aktuellem Niveau<span class="action-time">Aktualisiert: 27.07.2026 15:10</span>
       </div>
     </details>
 
     <details class="stock-news-item">
       <summary>China Mobile <span class="arrow">▸</span></summary>
-      <div class="snippet">Stand 23.07. (keine neuere Kursmeldung gefunden): Kurs stabil (~78,75 HKD), Forward-Dividendenrendite 6,3%, letzte Dividende 2,52 HKD. Wachstumstreiber: 5G-/Glasfaser-Migration. Regulatorisches Risiko: Die FCC prüft, China Mobile aus ihrer US-Robocall-Datenbank zu entfernen.
+      <div class="snippet">Stand weiterhin 10.07. (auch heute keine neuere Kursmeldung recherchierbar): Kurs stabil (~78,75 HKD), Forward-Dividendenrendite 6,3%, letzte Dividende 2,52 HKD. Wachstumstreiber: 5G-/Glasfaser-Migration. Regulatorisches Risiko: Die FCC prüft, China Mobile aus ihrer US-Robocall-Datenbank zu entfernen.
         <br><a href="https://www.digrin.com/stocks/detail/0941.HK/" target="_blank">Quelle: Digrin</a>
-        <br><span class="action-tag halten">Halten</span> — stabil/defensiv, aber FCC-Risiko im Blick behalten<span class="action-time">Aktualisiert: 26.07.2026 10:52</span>
+        <br><span class="action-tag halten">Halten</span> — stabil/defensiv, aber FCC-Risiko im Blick behalten<span class="action-time">Aktualisiert: 27.07.2026 15:10 (Kurs unverändert seit letzter Prüfung)</span>
+      </div>
+    </details>
+
+    <details class="stock-news-item">
+      <summary>Anhui Expressway — WKN A0M4LC, jetzt identifiziert <span class="arrow">▸</span></summary>
+      <div class="snippet">Stand 27.07.: WKN A0M4LC (ISIN CNE000001DC4) ist Anhui Expressway, ein chinesischer Autobahnbetreiber (Provinz Anhui) — passt zur bisherigen Einordnung "CN, Transport". H-Aktie (0995.HK) zuletzt bei ~16,19 HKD. Dividendenzahlung von 0,747 HKD/Aktie am 31.07. an Aktionäre mit Stichtag 02.07. Kein Marktwert-Update in der Tabelle, da keine gesicherte Umrechnungsbasis (Stückzahl/A- vs. H-Aktie) vorliegt.
+        <br><a href="https://www.stockopedia.com/share-prices/anhui-expressway-co-HKG:995/" target="_blank">Quelle: Stockopedia</a>
+        <br><span class="action-tag beobachten">Beobachten</span> — Position jetzt identifiziert, vor Handlungsempfehlung erst Kaufbasis/Stückzahl im Depot verifizieren<span class="action-time">Aktualisiert: 27.07.2026 15:10</span>
+      </div>
+    </details>
+
+    <details class="stock-news-item">
+      <summary>TeamViewer — WKN A2YN90, jetzt identifiziert <span class="arrow">▸</span></summary>
+      <div class="snippet">Stand 27.07.: WKN A2YN90 (ISIN DE000A2YN900) ist TeamViewer SE, deutscher Remote-Access-Softwareanbieter (SDAX/TecDAX) — passt zur bisherigen Einordnung "DE, Software". Kurs zieht deutlich an: 5,84 € (+3,7% am Tag, +17,6% im Monat), aber seit Jahresbeginn weiterhin −5,0%.
+        <br><a href="https://www.wallstreet-online.de/nachricht/21155195-beachtet-teamviewer-aktie-deutlich-27-07-2026" target="_blank">Quelle: wallstreetONLINE</a>
+        <br><span class="action-tag beobachten">Beobachten</span> — Position jetzt identifiziert, positive Kursdynamik der letzten Wochen beobachten, vor Aufstockung Quartalszahlen abwarten<span class="action-time">Aktualisiert: 27.07.2026 15:10</span>
       </div>
     </details>
   </aside>
@@ -1821,6 +1897,51 @@
     </section>
   </div>
 
+  <!-- ============ KOERPER-CHECK-IN TAB ============ -->
+  <div id="koerpercheckin" class="tab-panel">
+    <section>
+      <h2>Körper-Check-in</h2>
+      <p class="chart-sub" style="margin-bottom:14px;">Gewicht, Körperfett % und optional bis zu drei Fotos (vorne/seite/rücken) pro Check-in. Alles wird lokal gespeichert, unabhängig vom Trainingslog.</p>
+
+      <div class="chart-card" style="margin-bottom:20px;">
+        <h3>Neuer Check-in</h3>
+        <div class="train-add-row" style="margin-bottom:10px;">
+          <label style="font-size:12.5px; color:var(--text-secondary);">Datum</label>
+          <input type="date" id="koerper-datum-input">
+          <label style="font-size:12.5px; color:var(--text-secondary);">Gewicht (kg)</label>
+          <input type="number" id="koerper-gewicht-input" class="train-num" step="0.1" min="0" placeholder="z.B. 82.5">
+          <label style="font-size:12.5px; color:var(--text-secondary);">Körperfett % (optional)</label>
+          <input type="number" id="koerper-kfa-input" class="train-num" step="0.1" min="0" placeholder="z.B. 18.5">
+        </div>
+        <div class="train-add-row" style="margin-bottom:10px;">
+          <div class="koerper-foto-field">
+            <label>Foto vorne (optional)</label>
+            <input type="file" accept="image/*" capture="environment" id="koerper-foto-vorne">
+          </div>
+          <div class="koerper-foto-field">
+            <label>Foto seite (optional)</label>
+            <input type="file" accept="image/*" capture="environment" id="koerper-foto-seite">
+          </div>
+          <div class="koerper-foto-field">
+            <label>Foto rücken (optional)</label>
+            <input type="file" accept="image/*" capture="environment" id="koerper-foto-ruecken">
+          </div>
+        </div>
+        <div class="train-add-row">
+          <button type="button" class="train-small-btn primary" onclick="koerperSaveCheckin()">Check-in speichern</button>
+        </div>
+        <div id="koerper-save-status" class="koerper-status" style="display:none;"></div>
+      </div>
+
+      <div id="koerper-stats-area"></div>
+      <div id="koerper-chart-area"></div>
+      <div id="koerper-compare-area"></div>
+
+      <h3 style="margin:24px 0 10px;">Verlauf</h3>
+      <div id="koerper-timeline-list"></div>
+    </section>
+  </div>
+
   <!-- ============ WELTNEWS TAB ============ -->
   <div id="weltnews" class="tab-panel">
     <section>
@@ -1833,33 +1954,33 @@
 
         <div class="news-item">
           <span class="tag geopolitik">Geopolitik</span>
-          <div class="outlet">Times of Israel / CSIS</div>
-          <h4><a href="https://www.timesofisrael.com/liveblog-july-26-2026/" target="_blank">Iran-Krieg weitet sich aus: Netanyahu reist zu Trump, Gewalt eskaliert im Westjordanland</a></h4>
-          <p>Der seit Ende Februar 2026 laufende Iran-Krieg (ausgelöst von USA und Israel) hat sich über die Straße von Hormus hinaus ausgeweitet und bedroht zunehmend Golf-Infrastruktur und die globale Energiesicherheit. Netanyahu trifft Trump kommenden Dienstag im Weißen Haus. Parallel eskaliert die Lage im Westjordanland: Siedler haben zwei Moscheen in Brand gesteckt, "Rache"-Graffiti hinterlassen, nachdem zuvor vier Palästinenser und ein Israeli bei einer Schießerei getötet wurden.</p>
+          <div class="outlet">Fox News / CNN</div>
+          <h4><a href="https://www.foxnews.com/live-news/iran-war-trump-strait-of-hormuz-oil-07-22-26" target="_blank">Iran-Krieg: Rubio droht mit "Konsequenzen", Iran erklärt Hormus werde nie mehr wie vor dem Krieg</a></h4>
+          <p>Der seit Ende Februar 2026 laufende Iran-Krieg (ausgelöst von USA und Israel) bleibt ungelöst: Nach der 11. Angriffsnacht in Folge warnte US-Außenminister Rubio beim ASEAN-Gipfel, es werde "Konsequenzen" geben, falls der Iran seine Zusagen weiter verletze. Teheran erklärte im Gegenzug, die Straße von Hormus werde nie mehr in den Zustand vor dem Krieg zurückkehren. Netanyahu-Treffen mit Trump im Weißen Haus weiterhin angekündigt, aber noch nicht bestätigt vollzogen.</p>
           <details>
             <summary>Ganzen Artikel anzeigen</summary>
             <div class="article-body">
               <p>Der im Februar 2026 von den USA und Israel begonnene Krieg gegen den Iran hat die Machtverhältnisse im Nahen Osten durcheinandergebracht. Der Auftakt traf mit der Tötung von Obersten Führer Ali Khamenei ins Herz des iranischen Regimes und löste eine Welle Hunderter Vergeltungsraketen und Tausender Drohnen aus, die der Iran über die Region abfeuerte.</p>
-              <p>Nach einem im Juni 2026 vereinbarten Memorandum, das den Krieg beenden sollte, hat der Iran wiederholt Schiffe in der Straße von Hormus bedroht und angegriffen. Nach Angriffen auf drei Schiffe am 6. und 7. Juli verstärkten die USA ihre Angriffe auf iranische Ziele; Präsident Trump erklärte daraufhin, die Waffenruhe für beendet zu betrachten.</p>
-              <p>Israels Ministerpräsident Benjamin Netanyahu reist kommende Woche in die USA. Sein Büro bestätigte ein Treffen mit Trump im Weißen Haus am kommenden Dienstag, nach zwei Wochen täglicher US-Angriffe auf den Iran. Trump drohte zudem, für jedes iranische Schiff, das in der Straße von Hormus angegriffen wird, Brücken und Kraftwerke im Iran zu bombardieren.</p>
-              <p>Die eskalierenden US-Iran-Angriffe weiten sich über die Straße von Hormus hinaus aus und bedrohen zunehmend die Golf-Infrastruktur, die regionale Stabilität und die globale Energiesicherheit — direkt relevant für Energiewerte wie Siemens Energy im Portfolio.</p>
-              <p>Parallel eskaliert die Lage im Westjordanland: Siedler haben zwei Moscheen in Brand gesteckt und "Rache"-Graffiti hinterlassen, zwei Tage nach einer tödlichen Schießerei, bei der vier Palästinenser und ein Israeli getötet wurden.</p>
+              <p>Nach einem im Juni 2026 vereinbarten Memorandum, das den Krieg beenden sollte, hat der Iran wiederholt Schiffe in der Straße von Hormus bedroht und angegriffen. US-Präsident Trump warnte, jeder Angriff auf Schiffe in der Straße von Hormus werde mit US-Luftschlägen auf iranische Brücken und Kraftwerke beantwortet. Der Iran erklärte daraufhin, die Meerenge werde nie mehr in den Zustand vor dem Krieg zurückkehren.</p>
+              <p>US-Außenminister Marco Rubio sagte beim ASEAN-Gipfel auf den Philippinen, die USA seien weiterhin verhandlungsbereit, warnte aber vor "Konsequenzen", sollte der Iran seine Zusagen weiter verletzen — nachdem US-Streitkräfte die elfte Nacht in Folge Angriffe auf iranische Militärziele geflogen hatten.</p>
+              <p>Die eskalierenden US-Iran-Angriffe weiten sich über die Straße von Hormus hinaus aus und bedrohen zunehmend die Golf-Infrastruktur, die regionale Stabilität und die globale Energiesicherheit — direkt relevant für Energiewerte wie Siemens Energy im Portfolio. Laut Wikipedia-Zusammenfassung zur Krise wurden bislang mindestens 17 Handelsschiffe beschädigt, es gab eine globale Treibstoffkrise und eine US-Seeblockade gegen Iran.</p>
+              <p>Parallel bleibt die Lage im Westjordanland angespannt, nachdem Siedler zuvor zwei Moscheen in Brand gesteckt hatten, zwei Tage nach einer tödlichen Schießerei mit vier getöteten Palästinensern und einem getöteten Israeli.</p>
             </div>
           </details>
         </div>
 
         <div class="news-item">
           <span class="tag geopolitik">Geopolitik</span>
-          <div class="outlet">Democracy Now</div>
-          <h4><a href="https://www.democracynow.org/2026/7/24/headlines" target="_blank">US-Iran-Konflikt eskaliert: 13. Nacht in Folge mit US-Angriffen, Iran lehnt Waffenruhe ab</a></h4>
-          <p>Das US-Militär hat in der Nacht zum 24.07. die 13. Angriffsserie in Folge gegen den Iran geflogen. Der Iran wies einen Waffenstillstandsvorschlag von US-Präsident Trump zurück und beschoss seinerseits US-Militärziele in Bahrain, Kuwait und Jordanien. Direkt relevant für Energiepreise und Weltmärkte (Straße von Hormus).</p>
+          <div class="outlet">Al Jazeera / PYMNTS</div>
+          <h4><a href="https://www.pymnts.com/news/cross-border-commerce/cross-border-payments/2026/cross-border-payments-platform-project-mbridge-processed-55-49b-in-transaction-volume/" target="_blank">mBridge knackt neue Volumenmarke: Bank of China wickelt 1,7-Mrd.-USD-Transaktion ab</a></h4>
+          <p>Das chinesisch dominierte CBDC-Cross-Border-System mBridge hat inzwischen rund 69 Mrd. USD an Transaktionsvolumen verarbeitet (vorher 55,5 Mrd. USD), größtenteils in digitalem Yuan (e-CNY, ca. 95% des Volumens). Die Fujian-Filiale der Bank of China wickelte im Juli eine Einzeltransaktion über mehr als 1,7 Mrd. USD ab — ein Meilenstein für hochvolumige grenzüberschreitende Abwicklungen. Peking treibt die Kommerzialisierung über eine Hongkonger Einheit voran, mit Gebühren rund halb so hoch wie bei SWIFT.</p>
           <details>
             <summary>Ganzen Artikel anzeigen</summary>
             <div class="article-body">
-              <p>Das US-Militär hat in der Nacht zum 24. Juli 2026 die jüngste Angriffsrunde gegen den Iran abgeschlossen und damit die 13. Nacht in Folge mit Luftschlägen markiert. Nach Angaben iranischer Staatsmedien trafen US-Raketen mehrere Ziele rund um die Hauptstadt der ölreichen Provinz Chuzestan.</p>
-              <p>Der Iran reagierte am Morgen mit Angriffen auf US-Militärziele in Bahrain, Kuwait und Jordanien. Iranische und irakische Vertreter erklärten zudem, der Iran habe einen von US-Präsident Donald Trump vorgelegten Waffenstillstandsvorschlag abgelehnt.</p>
-              <p>Die anhaltende Eskalation im Golf hält die Sorge um die Straße von Hormus hoch, durch die ein erheblicher Teil des weltweiten Öltransports läuft. Für Anleger*innen bleibt das Umfeld für Energiewerte (u.a. Siemens Energy im Portfolio) und den breiten Markt dadurch volatil.</p>
-              <p>Parallel meldete die Region weitere Spannungen: Die philippinische Küstenwache warf der chinesischen Seite vor, zum zweiten Tag in Folge Wasserwerfer gegen Regierungsschiffe nahe einer umstrittenen Untiefe im Südchinesischen Meer eingesetzt zu haben, die dritte Konfrontation beider Länder in dieser Woche.</p>
+              <p>Die Bank of China hat über ihre Filiale in Fujian eine Transaktion im Wert von mehr als 1,7 Mrd. USD über mBridge abgewickelt — ein bedeutender Meilenstein für die Plattform, der zeigt, dass sie hochvolumige grenzüberschreitende Abwicklungen über verschiedene Währungen und Geschäftsszenarien hinweg unterstützen kann.</p>
+              <p>Insgesamt hat die Plattform inzwischen rund 69 Mrd. USD an Transaktionen verarbeitet, überwiegend in digitalem Yuan. Peking treibt die Kommerzialisierung von Project mBridge über eine Hongkonger Einheit voran; die kommerzielle Version soll Gebühren berechnen, die etwa halb so hoch sind wie bei Standard-internationalen Zahlungssystemen wie SWIFT.</p>
+              <p>Getestet wird die Plattform aktuell von Zentralbanken aus Festlandchina, Hongkong, Thailand, den Vereinigten Arabischen Emiraten und Saudi-Arabien. Chinas digitaler Yuan (e-CNY) macht schätzungsweise 95% des gesamten Abwicklungsvolumens auf mBridge aus.</p>
+              <p>Die jüngsten hochvolumigen Transaktionen im Juli 2026 unterstreichen Chinas Fortschritt bei der Skalierung von mBridge hin zu einer kommerziellen Alternative zur bestehenden, von SWIFT dominierten Zahlungsinfrastruktur — Teil desselben De-Dollarisierungstrends, der auch für die Portfolio-Recherche zur Deglobalisierung relevant ist.</p>
             </div>
           </details>
         </div>
@@ -1940,19 +2061,17 @@
 
         <div class="news-item">
           <span class="tag geopolitik">Geopolitik</span>
-          <div class="outlet">PYMNTS</div>
-          <h4><a href="https://www.pymnts.com/news/cross-border-commerce/cross-border-payments/2026/china-takes-on-swift-with-new-cross-border-payment-system/" target="_blank">China fordert SWIFT mit neuem grenzüberschreitendem Zahlungssystem heraus</a></h4>
-          <p>China bereitet mit "mBridge" (unterstützt von China, Hongkong, Saudi-Arabien, Thailand und den VAE) ein alternatives Cross-Border-Zahlungssystem vor, günstiger als SWIFT. Parallel dazu ist Libyen kürzlich Chinas eigenem CIPS-Zahlungssystem beigetreten, um die Dollar-Abhängigkeit zu reduzieren, Teil desselben De-Dollarisierungstrends, der auch in deiner Portfolio-Recherche zur Deglobalisierung eine Rolle spielte.</p>
+          <div class="outlet">Semafor / Bloomberg</div>
+          <h4><a href="https://www.semafor.com/article/07/20/2026/chevron-and-qatar-invest-in-iraq-syria-pipeline" target="_blank">Chevron und Qatar steigen offiziell bei Irak-Syrien-Pipeline ein</a></h4>
+          <p>Chevron hat gemeinsam mit einer Einheit des katarischen Konzerns Power International Holding eine Vereinbarung zur Wiederbelebung der Irak-Syrien-Pipeline unterzeichnet (Kapazität bis 2 Mio. Barrel/Tag, vorherige Route: Kirkuk–Baniyas). Zusätzlich unterzeichnete Chevron zwei weitere Irak-Fördervereinbarungen. Das Projekt (ca. 800 km, Bauzeit 2–2,5 Jahre) soll die Straße von Hormus für irakische Ölexporte "zur Nebensache machen".</p>
           <details>
             <summary>Ganzen Artikel anzeigen</summary>
             <div class="article-body">
-              <p>China bereitet Berichten zufolge den kommerziellen Start eines auf Digitalwährung ausgerichteten grenzüberschreitenden Zahlungsprogramms vor.</p>
-              <p>Die neue Plattform namens „mBridge" wird von den Zentralbanken Chinas, Hongkongs, Saudi-Arabiens, Thailands und der Vereinigten Arabischen Emirate unterstützt, berichtete die Financial Times unter Berufung auf mit der Sache vertraute Quellen.</p>
-              <p>Zwar ist unklar, wann das System starten wird, doch laut den Quellen befinden sich die Vorbereitungen in einem fortgeschrittenen Stadium, und die Gebühren für die Nutzung des Dienstes sollen halb so hoch sein wie bei Standard-Zahlungssystemen. mBridge dürfte vor allem kleinere Unternehmen ansprechen, denen Systeme wie SWIFT zu teuer und umständlich sind.</p>
-              <p>Die FT stellte fest, dass dies zu einer Zeit geschieht, in der auch andere regionale Zahlungssysteme neuen Schwung gewinnen, etwa das SEPA-System der Europäischen Zentralbank und das grenzüberschreitende QR-Code-Netzwerk der Ant Group, die schnellere und günstigere Transaktionen anstreben, besonders für kleinere Echtzeitzahlungen von Reisenden.</p>
-              <p>„Im Hintergrund läuft leise ein Wettrüsten alternativer Finanzsysteme", sagte Tom Keatinge, Gründungsdirektor des Centre for Finance and Security am britischen RUSI, mit Verweis auf die Umarmung von Stablecoins durch das Weiße Haus. China wolle mit Systemen wie mBridge seiner digitalen Währung e-CNY eine größere Rolle im globalen Finanzwesen verschaffen. „Man könnte es eine digitale Währungs-Seidenstraße nennen, es überrascht daher nicht, dass China das weiterverfolgt", so Keatinge.</p>
-              <p>Die „globale Zahlungslandschaft", einst von SWIFT dominiert, zersplittert in ein „System konkurrierender Netzwerke, in dem mBridge eines von mehreren sein wird", sagte Gene Ma, Leiter der China-Forschung am Institute of International Finance, gegenüber der FT.</p>
-              <p>In weiteren Nachrichten zu grenzüberschreitenden Zahlungen zeigen aktuelle Untersuchungen von PYMNTS Intelligence und Mastercard, dass mehr als die Hälfte der amerikanischen kleinen und mittleren Unternehmen (KMU) Waren und Vorleistungen von ausländischen Lieferanten bezogen. Bei Unternehmen mit einem Jahresumsatz zwischen 1 und 10 Millionen Dollar lag der Anteil globaler Beschaffung bei 73%. Allerdings hat sich das Geschäftsmodell der KMU schneller weiterentwickelt als die Zahlungsinfrastruktur, so Mike Kresse, Executive Vice President bei Mastercard.</p>
+              <p>Chevron und eine Einheit des katarischen Mischkonzerns Power International Holding haben sich darauf geeinigt, gemeinsam an der Wiederbelebung der alten Irak-Syrien-Ölpipeline zu arbeiten. Die Leitung könnte bis zu 2 Mio. Barrel pro Tag aus dem Irak transportieren und dabei die Straße von Hormus umgehen.</p>
+              <p>Thomas Barrack, US-Sondergesandter für Syrien und Irak, hat Gespräche mit Vertretern beider Länder sowie Unternehmen wie Chevron über die Wiederbelebung der seit über zwei Jahrzehnten stillgelegten Pipeline von Kirkuk zur syrischen Mittelmeerküste (Baniyas) geführt.</p>
+              <p>Ein Memorandum of Understanding zwischen Irak und Syrien deckt technische und finanzielle Untersuchungen für die rund 800 km lange Pipeline mit einer geplanten Kapazität von ca. 2,5 Mio. Barrel/Tag ab. Die Umsetzung soll zwei bis zweieinhalb Jahre dauern.</p>
+              <p>Parallel zum Irak-Syrien-MoU unterzeichnete Chevron ein separates Abkommen mit den Firmen Capital TI (USA) und Urbacon Trading &amp; Contracting (Katar) zur Durchführung der Pipeline-Bauarbeiten. Zusätzlich schloss Chevron zwei weitere Fördervereinbarungen mit dem Irak zur Steigerung der Ölproduktion ab.</p>
+              <p>Hintergrund ist Bagdads Bestreben, die Abhängigkeit von der Straße von Hormus zu verringern, deren Transit durch den anhaltenden US-Israel-Krieg gegen den Iran stark gestört ist. Für das Portfolio bleibt Chevron damit die naheliegendste spekulative Ergänzung aus der Weltnews-Recherche (siehe Empfehlungen im Portfolio-Tab).</p>
             </div>
           </details>
         </div>
@@ -1981,9 +2100,11 @@
 
       <div class="news-sources">
         Ausgewählte seriöse Quellen: <a href="https://www.aljazeera.com/" target="_blank">Al Jazeera</a> ·
+        <a href="https://www.foxnews.com/" target="_blank">Fox News</a> ·
         <a href="https://www.technologyreview.com/" target="_blank">MIT Technology Review</a> ·
         <a href="https://www.technology.org/" target="_blank">Technology.org</a> ·
-        <a href="https://www.pymnts.com/" target="_blank">PYMNTS</a>. Volltexte oben jeweils mit Link zum Original.
+        <a href="https://www.pymnts.com/" target="_blank">PYMNTS</a> ·
+        <a href="https://www.semafor.com/" target="_blank">Semafor</a>. Volltexte oben jeweils mit Link zum Original.
       </div>
     </section>
   </div>
@@ -2605,7 +2726,11 @@ function loadTrainingState() {
   }
   return { days: [], cardioLog: [] };
 }
-function saveTrainingState() { safeLSSet(TRAINING_STORAGE_KEY, JSON.stringify(trainingState)); }
+/* Gibt true/false zurueck (statt wie vorher nichts), damit Aufrufer erkennen koennen ob
+   das Schreiben tatsaechlich geklappt hat -- wichtig fuer das PR-Foto-Feature weiter unten,
+   das bei localStorage-Ueberlauf (QuotaExceededError, von safeLSSet abgefangen) den Nutzer
+   informieren und die im Speicher gehaltene Aenderung zuruecknehmen muss. */
+function saveTrainingState() { return safeLSSet(TRAINING_STORAGE_KEY, JSON.stringify(trainingState)); }
 
 var trainingState = loadTrainingState();
 var trainIdCounter = 0;
@@ -2700,6 +2825,139 @@ function trainEsc(str) {
   var div = document.createElement('div');
   div.textContent = str == null ? '' : str;
   return div.innerHTML;
+}
+
+/* ============ FORMCHECK-FOTOS ZU TRAININGS-BESTLEISTUNGEN ============ */
+/* Pro Uebung genau EIN Foto zur aktuellen Bestleistung, keine wachsende Historie
+   (Speicherplatz-Schonung, siehe Kommentar bei TRAINING_STORAGE_KEY-Nutzung unten).
+   Datenmodell: ex.prPhoto = { dataUrl, gewicht, wdh, datum }.
+
+   Fotos werden VOR dem Speichern client-seitig ueber ein <canvas> auf max. 800px
+   Kantenlaenge herunterskaliert und als JPEG (Qualitaet ~0.7) exportiert. Ohne diesen
+   Schritt wuerden Handy-Fotos (oft mehrere MB als Base64 noch groesser) das gemeinsame
+   localStorage-Kontingent (typischerweise nur 5-10 MB fuer die gesamte Seite, inkl.
+   Trainings-, Kurs- und Cardio-Daten) sehr schnell sprengen. */
+
+/* Generische, wiederverwendbare Bild-Lightbox (Vollbild-Overlay, Klick zum Schliessen).
+   Bewusst ohne externes Lightbox-Framework, nur Vanilla DOM. */
+function showImageLightbox(dataUrl) {
+  var overlay = document.createElement('div');
+  overlay.className = 'train-pr-photo-lightbox';
+  var img = document.createElement('img');
+  img.src = dataUrl;
+  img.alt = 'Foto in Grossansicht';
+  overlay.appendChild(img);
+  overlay.addEventListener('click', function() {
+    if (overlay.parentNode) { overlay.parentNode.removeChild(overlay); }
+  });
+  document.body.appendChild(overlay);
+}
+
+/* Liest eine ausgewaehlte Bilddatei ein, skaliert sie proportional auf max. maxDim Pixel
+   Kantenlaenge herunter und liefert das Ergebnis als JPEG-Data-URL an den Callback.
+   Bei jedem Fehler (nicht lesbare Datei, kaputtes Bild) wird callback(null) aufgerufen --
+   der Aufrufer entscheidet dann selbst ueber eine Nutzer-Meldung, damit ein einzelner
+   Foto-Fehler nie die ganze App zum Stehen bringt. */
+function trainResizeImageFile(file, maxDim, quality, callback) {
+  var reader = new FileReader();
+  reader.onerror = function() {
+    dbgLog('trainResizeImageFile: Datei konnte nicht gelesen werden.');
+    callback(null);
+  };
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onerror = function() {
+      dbgLog('trainResizeImageFile: Bilddaten konnten nicht dekodiert werden.');
+      callback(null);
+    };
+    img.onload = function() {
+      var w = img.naturalWidth || img.width;
+      var h = img.naturalHeight || img.height;
+      if (!w || !h) { dbgLog('trainResizeImageFile: Bild hat keine gueltigen Dimensionen.'); callback(null); return; }
+      if (w > maxDim || h > maxDim) {
+        if (w >= h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+        else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+      }
+      try {
+        var canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        var dataUrl = canvas.toDataURL('image/jpeg', quality);
+        callback(dataUrl);
+      } catch (err) {
+        dbgLog('trainResizeImageFile: Fehler beim Verkleinern (' + err.message + ').');
+        callback(null);
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* Oeffnet die Datei-/Kamera-Auswahl fuer ein PR-Foto zu genau einer Uebung. Am Handy schlaegt
+   capture="environment" direkt die Rueckkamera vor, am Desktop erscheint der normale
+   Datei-Dialog. Das aktuell beste Set (trainBestSet) wird zum Zeitpunkt des Uploads
+   uebernommen -- das Foto ist damit "das Foto zur aktuellen Bestleistung", unabhaengig vom
+   genauen Aufnahmezeitpunkt (siehe Aufgabenstellung: keine strikte Zeit-Verknuepfung noetig). */
+function trainUploadPrPhoto(dayId, exerciseId) {
+  var day = trainingState.days.filter(function(d) { return d.id === dayId; })[0];
+  if (!day) { return; }
+  var ex = day.exercises.filter(function(e) { return e.id === exerciseId; })[0];
+  if (!ex) { return; }
+  var best = trainBestSet(ex.sets);
+  if (!best) { return; }
+
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.setAttribute('capture', 'environment');
+  input.style.display = 'none';
+  document.body.appendChild(input);
+
+  input.addEventListener('change', function() {
+    var file = input.files && input.files[0];
+    if (input.parentNode) { input.parentNode.removeChild(input); }
+    if (!file) { return; }
+    trainResizeImageFile(file, 800, 0.7, function(dataUrl) {
+      if (!dataUrl) {
+        alert('Foto konnte nicht verarbeitet werden.');
+        return;
+      }
+      var prevPhoto = ex.prPhoto || null;
+      ex.prPhoto = { dataUrl: dataUrl, gewicht: best.gewicht, wdh: best.wdh, datum: best.datum };
+      var ok = saveTrainingState();
+      if (!ok) {
+        /* safeLSSet faengt QuotaExceededError & Co. bereits ab und faellt auf einen
+           In-Memory-Speicher zurueck (siehe safeLSGet/safeLSSet weiter oben), damit die
+           App nicht abstuerzt. Fuer Fotos reicht das aber nicht: der In-Memory-Fallback
+           geht beim Neuladen verloren und wuerde dem Nutzer ein Foto vorgaukeln, das in
+           Wahrheit nie dauerhaft gespeichert wurde. Deshalb hier zusaetzlich die Aenderung
+           zuruecknehmen und aktiv informieren, statt still weiterzumachen. */
+        ex.prPhoto = prevPhoto;
+        alert('Foto konnte nicht gespeichert werden, evtl. ist der Speicherplatz voll.');
+        dbgLog('trainUploadPrPhoto: Speichern fehlgeschlagen (vermutlich Speicherplatz voll), Foto fuer "' + ex.name + '" verworfen.');
+        renderTraining();
+        return;
+      }
+      dbgLog('trainUploadPrPhoto: Foto fuer "' + ex.name + '" gespeichert, Groesse ca. ' + Math.round(dataUrl.length / 1024) + ' KB (Base64).');
+      renderTraining();
+    });
+  });
+
+  input.click();
+}
+
+function trainDeletePrPhoto(dayId, exerciseId) {
+  if (!confirm('Foto zur Bestleistung entfernen?')) { return; }
+  var day = trainingState.days.filter(function(d) { return d.id === dayId; })[0];
+  if (!day) { return; }
+  var ex = day.exercises.filter(function(e) { return e.id === exerciseId; })[0];
+  if (!ex) { return; }
+  ex.prPhoto = null;
+  saveTrainingState();
+  renderTraining();
 }
 
 /* ============ TRAININGSFORTSCHRITT (Vergleich zwischen Trainingseinheiten) ============ */
@@ -2829,6 +3087,58 @@ function renderTraining() {
           progressHtml += '<span class="train-progress-item train-trend-same">Noch keine frühere Einheit zum Vergleich.</span>';
         }
         progressBox.innerHTML = progressHtml;
+
+        /* Formcheck-Foto zur aktuellen Bestleistung: Thumbnail + Aendern/Entfernen wenn
+           vorhanden, sonst ein "Foto hinzufuegen"-Button. Als eigene Span-Gruppe angehaengt,
+           damit sie sich in die bestehende flex-wrap-Zeile der progressBox einreiht. */
+        if (best) {
+          var photoWrap = document.createElement('span');
+          photoWrap.className = 'train-pr-photo-wrap';
+
+          if (ex.prPhoto) {
+            var thumb = document.createElement('img');
+            thumb.src = ex.prPhoto.dataUrl;
+            thumb.alt = 'Foto zur Bestleistung von ' + ex.name;
+            thumb.title = 'Foto vergroessern';
+            thumb.className = 'train-pr-photo-thumb';
+            thumb.onclick = (function(url) { return function() { showImageLightbox(url); }; })(ex.prPhoto.dataUrl);
+            photoWrap.appendChild(thumb);
+
+            var changeBtn = document.createElement('button');
+            changeBtn.type = 'button';
+            changeBtn.className = 'train-small-btn train-pr-photo-btn';
+            changeBtn.textContent = 'Foto ändern';
+            changeBtn.onclick = function() { trainUploadPrPhoto(day.id, ex.id); };
+            photoWrap.appendChild(changeBtn);
+
+            var removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'train-pr-photo-remove';
+            removeBtn.title = 'Foto entfernen';
+            removeBtn.textContent = '×';
+            removeBtn.onclick = function() { trainDeletePrPhoto(day.id, ex.id); };
+            photoWrap.appendChild(removeBtn);
+
+            if (best.gewicht !== ex.prPhoto.gewicht || best.wdh !== ex.prPhoto.wdh) {
+              var newPrHint = document.createElement('button');
+              newPrHint.type = 'button';
+              newPrHint.className = 'train-pr-photo-hint';
+              newPrHint.textContent = 'Neue Bestleistung! Foto aktualisieren?';
+              newPrHint.onclick = function() { trainUploadPrPhoto(day.id, ex.id); };
+              photoWrap.appendChild(newPrHint);
+            }
+          } else {
+            var addBtn = document.createElement('button');
+            addBtn.type = 'button';
+            addBtn.className = 'train-small-btn train-pr-photo-btn';
+            addBtn.textContent = 'Foto hinzufügen';
+            addBtn.onclick = function() { trainUploadPrPhoto(day.id, ex.id); };
+            photoWrap.appendChild(addBtn);
+          }
+
+          progressBox.appendChild(photoWrap);
+        }
+
         exLeft.appendChild(progressBox);
 
         var table = document.createElement('table');
@@ -3304,6 +3614,670 @@ function calcRun() {
 
 calcUpdateSize();
 dbgLog('Script vollstaendig geladen. lsAvailable=' + lsAvailable + ', Trainingstage=' + trainingState.days.length);
+
+/* ============ AUTOMATISCHE KURSABFRAGE (Portfolio-Tab) ============ */
+/* Datenquelle: Yahoo-Finance-Chart-API (https://query1.finance.yahoo.com/v8/finance/chart/SYMBOL),
+   keylos und kostenlos, liefert aber keine CORS-Header fuer Browser-Fetches. Deshalb Aufruf ueber
+   einen oeffentlichen CORS-Proxy (erst allorigins.win, bei Fehler codetabs.com als Fallback).
+   BEIDE Proxies sind Drittanbieter ohne SLA -- koennen ausfallen, langsam sein oder blockiert werden.
+   Stooq (urspruenglich geplante Quelle) wurde getestet und verworfen: der klassische /q/l/-CSV-Endpunkt
+   liefert inzwischen nur noch "Seite existiert nicht", der /q/d/l/-Endpunkt verlangt einen
+   JavaScript-Proof-of-Work-Anti-Bot-Check (SubtleCrypto-Huerde + /__verify-Cookie), der sich fuer
+   eine einfache Client-Anfrage nicht sinnvoll nachbauen laesst.
+
+   WICHTIG zur Ehrlichkeit der Zahlen:
+   - Es sind keine Stueckzahlen je Position im Dashboard hinterlegt, nur fixe Euro-Wert-Angaben.
+     Deshalb kann kein "echter" Depotwert aus Kurs x Stueckzahl berechnet werden.
+   - Die Delta-Spalte (Δ) bezieht sich ab jetzt auf die Kursbewegung seit dem zuletzt in diesem
+     Browser gespeicherten Referenzkurs (localStorage), NICHT auf den urspruenglichen Kaufkurs.
+   - Der Euro-Wert je Position wird bei jedem Update-Klick (ausser dem allerersten, der nur die
+     Basis setzt) proportional zur Kursbewegung in der jeweiligen Landeswaehrung fortgeschrieben:
+     neuerWert = alterWert * (neuerKurs / letzterGespeicherterKurs). Wechselkurseffekte (USD/HKD -> EUR)
+     werden dabei bewusst NICHT eingerechnet, um keine zusaetzliche unsichere FX-Abfrage-Kette
+     einzubauen. Das ist eine Naeherung, kein exakter Depotwert -- siehe Hinweistext im Portfolio-Tab. */
+
+var KURSE_STORAGE_KEY = 'portfolioLiveKurse_v1';
+var KURSE_PROXIES = [
+  function (url) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url); },
+  function (url) { return 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url); }
+];
+
+var KURSE_POSITIONEN = [
+  { pos: 'paypal',         symbol: 'PYPL',    currency: 'USD' },
+  { pos: 'apple',          symbol: 'AAPL',    currency: 'USD' },
+  { pos: 'amazon',         symbol: 'AMZN',    currency: 'USD' },
+  { pos: 'bmw',            symbol: 'BMW.DE',  currency: 'EUR' },
+  { pos: 'microsoft',      symbol: 'MSFT',    currency: 'USD' },
+  { pos: 'anhui',          symbol: '0995.HK', currency: 'HKD' },
+  { pos: 'siemens-energy', symbol: 'ENR.DE',  currency: 'EUR' },
+  { pos: 'lam-research',   symbol: 'LRCX',    currency: 'USD' },
+  { pos: 'unitedhealth',   symbol: 'UNH',     currency: 'USD' },
+  { pos: 'byd',            symbol: '1211.HK', currency: 'HKD' },
+  { pos: 'teamviewer',     symbol: 'TMV.DE',  currency: 'EUR' },
+  { pos: 'china-mobile',   symbol: '0941.HK', currency: 'HKD' }
+];
+
+function kurseLoadStore() {
+  var raw = safeLSGet(KURSE_STORAGE_KEY);
+  if (!raw) { return {}; }
+  try { return JSON.parse(raw) || {}; } catch (e) { return {}; }
+}
+function kurseSaveStore(store) {
+  safeLSSet(KURSE_STORAGE_KEY, JSON.stringify(store));
+}
+
+function kurseParseWert(text) {
+  /* "230 €" / "~1.976 €" -> 230 / 1976 (deutsches Zahlenformat, Punkt = Tausendertrenner) */
+  var n = parseFloat(String(text).replace('~', '').replace(/[.\s€]/g, '').replace(',', '.'));
+  return isNaN(n) ? null : n;
+}
+function kurseFormatWert(n) {
+  return Math.round(n).toLocaleString('de-DE') + ' €';
+}
+function kurseFormatDelta(pct) {
+  var sign = pct >= 0 ? '+' : '−';
+  return sign + Math.abs(pct).toFixed(1).replace('.', ',') + '%';
+}
+
+function kurseDelay(ms) {
+  return new Promise(function (resolve) { setTimeout(resolve, ms); });
+}
+
+/* Beide oeffentlichen Proxies (allorigins.win, codetabs.com) sind in Tests spuerbar instabil:
+   ein Teil der Anfragen liefert 5xx-Gateway-Fehler statt der eigentlichen Antwort, auch wenn der
+   Dienst grundsaetzlich erreichbar ist. Deshalb pro Proxy bis zu 2 Versuche mit kurzer Pause,
+   bevor auf den naechsten Proxy gewechselt wird -- das erhoeht die Erfolgsquote deutlich, ohne
+   die Sonderfaelle zu verschweigen: siehe Hinweistext im Portfolio-Tab. */
+function kurseFetchViaProxy(targetUrl, proxyIndex, attempt) {
+  attempt = attempt || 0;
+  if (proxyIndex >= KURSE_PROXIES.length) {
+    return Promise.reject(new Error('Alle CORS-Proxies fehlgeschlagen'));
+  }
+  var proxyUrl = KURSE_PROXIES[proxyIndex](targetUrl);
+  /* Kostenlose Proxies haengen bei Ueberlastung teils minutenlang statt schnell einen Fehler
+     zu liefern. Ohne eigenes Timeout wuerde ein einzelner haengender Request die ganze Abfrage
+     ausbremsen. Deshalb harter Abbruch nach 9 Sekunden via AbortController, danach Retry/Fallback. */
+  var controller = new AbortController();
+  var timeoutId = setTimeout(function () { controller.abort(); }, 9000);
+  return fetch(proxyUrl, { cache: 'no-store', signal: controller.signal })
+    .then(function (r) {
+      clearTimeout(timeoutId);
+      if (!r.ok) { throw new Error('HTTP ' + r.status); }
+      return r.json();
+    })
+    .catch(function (err) {
+      clearTimeout(timeoutId);
+      if (err && err.name === 'AbortError') { err = new Error('Zeitueberschreitung (9s)'); }
+      if (attempt < 1) {
+        dbgLog('Kursabfrage: Proxy ' + proxyIndex + ' Versuch ' + (attempt + 1) + ' fehlgeschlagen (' + err.message + '), erneuter Versuch.');
+        return kurseDelay(1200).then(function () { return kurseFetchViaProxy(targetUrl, proxyIndex, attempt + 1); });
+      }
+      dbgLog('Kursabfrage: Proxy ' + proxyIndex + ' endgueltig fehlgeschlagen (' + err.message + '), versuche naechsten Proxy.');
+      return kurseFetchViaProxy(targetUrl, proxyIndex + 1, 0);
+    });
+}
+
+function kurseFetchOne(symbol) {
+  var target = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(symbol) + '?interval=1d&range=5d';
+  return kurseFetchViaProxy(target, 0).then(function (data) {
+    var result = data && data.chart && data.chart.result && data.chart.result[0];
+    var meta = result && result.meta;
+    if (!meta || typeof meta.regularMarketPrice !== 'number') {
+      throw new Error('Kein Kurs in Antwort fuer ' + symbol);
+    }
+    return {
+      price: meta.regularMarketPrice,
+      currency: meta.currency,
+      time: meta.regularMarketTime ? new Date(meta.regularMarketTime * 1000) : new Date()
+    };
+  });
+}
+
+function kurseUpdateAll() {
+  var btn = document.getElementById('kurse-update-btn');
+  var status = document.getElementById('kurse-status');
+  if (btn) { btn.disabled = true; }
+  if (status) { status.textContent = 'Lade Kurse ueber Yahoo Finance (per CORS-Proxy) ...'; }
+  document.getElementById('kurse-einschaetzung-hinweis').style.display = 'block';
+
+  var store = kurseLoadStore();
+  var jetzt = new Date();
+  var erfolge = 0;
+  var fehler = [];
+  var ersteBasisGesetzt = 0;
+
+  /* Positionen bewusst NACHEINANDER abfragen (nicht alle 12 gleichzeitig): die kostenlosen
+     CORS-Proxies reagieren auf ploetzliche Bursts von ca. 12+ Parallel-Requests deutlich
+     instabiler (mehr 5xx-Fehler) als auf eine gestaffelte Abfolge. Kleine Pause zwischen den
+     Positionen erhoeht die Gesamt-Erfolgsquote messbar, macht den Abruf aber langsamer (mehrere
+     Sekunden bis knapp eine Minute fuer alle 12 Positionen ist normal). */
+  var kette = Promise.resolve();
+  KURSE_POSITIONEN.forEach(function (cfg) {
+    kette = kette.then(function () {
+      return kurseFetchOne(cfg.symbol).then(function (res) {
+        erfolge++;
+        var vorher = store[cfg.pos];
+        kurseApplyResult(cfg, res, vorher);
+        store[cfg.pos] = { price: res.price, currency: res.currency, time: res.time.toISOString() };
+        if (!vorher) { ersteBasisGesetzt++; }
+      }).catch(function (err) {
+        fehler.push(cfg.symbol + ': ' + err.message);
+        dbgLog('Kursabfrage fehlgeschlagen fuer ' + cfg.symbol + ': ' + err.message);
+        /* Bestehende Werte bleiben bei Fehler bewusst unveraendert. */
+      }).then(function () {
+        if (status) { status.textContent = 'Lade Kurse ueber Yahoo Finance (per CORS-Proxy) ... (' + (erfolge + fehler.length) + '/' + KURSE_POSITIONEN.length + ')'; }
+        return kurseDelay(400);
+      });
+    });
+  });
+
+  kette.then(function () {
+    kurseSaveStore(store);
+    kurseUpdateAggregates();
+    if (btn) { btn.disabled = false; }
+    var zeitStr = jetzt.toLocaleDateString('de-AT') + ' ' + jetzt.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' });
+    var txt = 'Kurse abgerufen: ' + zeitStr + ' (Yahoo Finance, Vortages-/verzoegerter Tagesschlusskurs). ' +
+      erfolge + ' von ' + KURSE_POSITIONEN.length + ' Positionen aktualisiert.';
+    if (ersteBasisGesetzt > 0) {
+      txt += ' ' + ersteBasisGesetzt + ' Position(en) zum ersten Mal abgerufen: nur Referenzkurs gesetzt, noch keine Δ-/Wert-Berechnung.';
+    }
+    if (fehler.length > 0) {
+      txt += ' Fehler bei: ' + fehler.join('; ') + '.';
+    }
+    if (status) { status.textContent = txt; }
+    dbgLog('Kursabfrage abgeschlossen: ' + erfolge + ' ok, ' + fehler.length + ' Fehler.');
+  });
+}
+
+function kurseApplyResult(cfg, res, vorher) {
+  var row = document.querySelector('#portfolio tr[data-pos="' + cfg.pos + '"]');
+  var bar = document.querySelector('#portfolio .rank-bar-row[data-pos="' + cfg.pos + '"]');
+  if (!row) { return; }
+  var wertCell = row.children[3];
+  var deltaCell = row.children[4];
+  var alterWert = kurseParseWert(wertCell.textContent);
+
+  if (!vorher) {
+    /* Erster Abruf ueberhaupt fuer diese Position: nur Basis speichern, keine Wert-/Delta-Aenderung,
+       da kein frueherer live abgerufener Kurs zum Vergleich existiert. */
+    deltaCell.textContent = 'Basis gesetzt';
+    deltaCell.className = 'num';
+    return;
+  }
+
+  var pctChange = (res.price - vorher.price) / vorher.price * 100;
+  deltaCell.textContent = kurseFormatDelta(pctChange) + ' seit ' + new Date(vorher.time).toLocaleDateString('de-AT');
+  deltaCell.className = 'num ' + (pctChange >= 0 ? 'delta-pos' : 'delta-neg');
+
+  if (alterWert !== null) {
+    var neuerWert = alterWert * (res.price / vorher.price);
+    wertCell.textContent = kurseFormatWert(neuerWert);
+    if (bar) {
+      var valEl = bar.querySelector('.val');
+      if (valEl) { valEl.textContent = kurseFormatWert(neuerWert); }
+    }
+  }
+}
+
+function kurseUpdateAggregates() {
+  /* Summiert die aktuell in der Tabelle angezeigten Wert-Zellen neu und schreibt die
+     "Aktueller Wert"-Kachel fort. Kaufwert gesamt (2.012 €, Kauf 01.01.2026) bleibt fix,
+     da er den historischen Einstand dokumentiert und nicht durch Live-Kurse veraendert wird. */
+  var rows = document.querySelectorAll('#portfolio table.pos-table tbody tr');
+  var summe = 0;
+  var anzahl = 0;
+  rows.forEach(function (row) {
+    var w = kurseParseWert(row.children[3].textContent);
+    if (w !== null) { summe += w; anzahl++; }
+  });
+  if (anzahl === 0) { return; }
+
+  var kaufwertEl = document.getElementById('kurse-kaufwert');
+  var aktuellerWertEl = document.getElementById('kurse-aktueller-wert');
+  var subEl = document.getElementById('kurse-aktueller-wert-sub');
+  var kaufwert = kaufwertEl ? kurseParseWert(kaufwertEl.textContent) : null;
+
+  var vorherigeSummeRaw = safeLSGet('portfolioLetzteSumme_v1');
+  var vorherigeSumme = vorherigeSummeRaw ? parseFloat(vorherigeSummeRaw) : null;
+
+  if (aktuellerWertEl) { aktuellerWertEl.textContent = '~' + kurseFormatWert(summe); }
+  if (subEl) {
+    var teile = [];
+    if (kaufwert) {
+      var pctKauf = (summe - kaufwert) / kaufwert * 100;
+      teile.push('Δ ' + kurseFormatDelta(pctKauf) + ' seit Kauf');
+    }
+    if (vorherigeSumme) {
+      var pctVorher = (summe - vorherigeSumme) / vorherigeSumme * 100;
+      teile.push(kurseFormatDelta(pctVorher) + ' seit letztem Live-Abruf');
+    }
+    subEl.textContent = teile.length > 0 ? teile.join(' · ') : 'Live aktualisiert';
+  }
+  safeLSSet('portfolioLetzteSumme_v1', String(summe));
+}
+
+/* ============ KOERPER-CHECK-IN (Gewicht-/Koerperfett-Verlauf + Fotos) ============ */
+/* Eigener localStorage-Key (bewusst NICHT TRAINING_STORAGE_KEY): Ziel ist, dass dieses
+   Feature das Speicherkontingent nicht mit dem Trainingslog teilt und im dbgLog einzeln
+   beobachtbar bleibt (Gesamtgroesse wird nach jedem Speichern geloggt, siehe unten). */
+var KOERPER_STORAGE_KEY = 'koerperCheckins_v1';
+
+function loadKoerperState() {
+  var raw = safeLSGet(KOERPER_STORAGE_KEY);
+  if (raw) {
+    try {
+      var parsed = JSON.parse(raw);
+      if (!parsed.checkins) { parsed.checkins = []; }
+      return parsed;
+    } catch (e) {}
+  }
+  return { checkins: [] };
+}
+function saveKoerperState() { return safeLSSet(KOERPER_STORAGE_KEY, JSON.stringify(koerperState)); }
+
+var koerperState = loadKoerperState();
+var koerperIdCounter = 0;
+function koerperNewId() { koerperIdCounter++; return 'kc_' + Date.now() + '_' + koerperIdCounter; }
+
+/* Foto-Kompression bewusst AGGRESSIVER als beim Formcheck-Foto-Feature (trainUploadPrPhoto,
+   800px Kantenlaenge / Qualitaet 0.7): dort existiert pro Uebung immer nur GENAU EIN Foto
+   gleichzeitig, alte Fotos werden beim naechsten PR ersetzt. Hier dagegen kann sich pro
+   Check-in (z.B. woechentlich, ueber Monate) ein Satz von bis zu DREI Fotos ansammeln, und
+   die gesamte Historie bleibt erhalten -- das waechst ueber Zeit, statt konstant zu bleiben.
+   500px / Qualitaet 0.6 haelt den Verbrauch pro Einzelfoto kleiner, loest das Grundproblem
+   aber nicht vollstaendig: viele Check-ins mit Fotos ueber mehrere Monate koennen das
+   gemeinsame localStorage-Kontingent (typischerweise nur 5-10 MB fuer die gesamte Seite,
+   geteilt mit Trainings- und Kursdaten) trotzdem fuellen. Es gibt bewusst keine automatische
+   Loeschung alter Check-ins -- im Zweifel muss manuell aufgeraeumt werden (koerperDeleteCheckin). */
+function koerperResizeToDataUrl(file) {
+  return new Promise(function(resolve) {
+    trainResizeImageFile(file, 500, 0.6, function(dataUrl) { resolve(dataUrl); });
+  });
+}
+
+function koerperShowStatus(msg, isError) {
+  var el = document.getElementById('koerper-save-status');
+  if (!el) { return; }
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.className = 'koerper-status ' + (isError ? 'error' : 'ok');
+}
+
+function koerperSaveCheckin() {
+  dbgLog('koerperSaveCheckin() aufgerufen');
+  var datumInput = document.getElementById('koerper-datum-input');
+  var gewichtInput = document.getElementById('koerper-gewicht-input');
+  var kfaInput = document.getElementById('koerper-kfa-input');
+  var vorneInput = document.getElementById('koerper-foto-vorne');
+  var seiteInput = document.getElementById('koerper-foto-seite');
+  var rueckenInput = document.getElementById('koerper-foto-ruecken');
+  if (!datumInput || !gewichtInput) { dbgLog('koerperSaveCheckin: Eingabefelder nicht gefunden!'); return; }
+
+  var datum = datumInput.value || new Date().toISOString().slice(0, 10);
+  var gewicht = parseFloat(gewichtInput.value);
+  if (!gewicht || gewicht <= 0 || isNaN(gewicht)) {
+    koerperShowStatus('Bitte ein gültiges Gewicht eintragen.', true);
+    return;
+  }
+  var kfaRaw = kfaInput ? kfaInput.value : '';
+  var koerperfett = null;
+  if (kfaRaw !== '' && kfaRaw != null) {
+    var kfaParsed = parseFloat(kfaRaw);
+    if (!isNaN(kfaParsed) && kfaParsed >= 0) { koerperfett = kfaParsed; }
+  }
+
+  var vorneFile = vorneInput && vorneInput.files && vorneInput.files[0] ? vorneInput.files[0] : null;
+  var seiteFile = seiteInput && seiteInput.files && seiteInput.files[0] ? seiteInput.files[0] : null;
+  var rueckenFile = rueckenInput && rueckenInput.files && rueckenInput.files[0] ? rueckenInput.files[0] : null;
+
+  Promise.all([
+    vorneFile ? koerperResizeToDataUrl(vorneFile) : Promise.resolve(null),
+    seiteFile ? koerperResizeToDataUrl(seiteFile) : Promise.resolve(null),
+    rueckenFile ? koerperResizeToDataUrl(rueckenFile) : Promise.resolve(null)
+  ]).then(function(results) {
+    var checkin = {
+      id: koerperNewId(),
+      datum: datum,
+      gewicht: gewicht,
+      koerperfett: koerperfett,
+      fotos: { vorne: results[0], seite: results[1], ruecken: results[2] }
+    };
+    koerperState.checkins.push(checkin);
+    koerperState.checkins.sort(function(a, b) { return a.datum < b.datum ? -1 : (a.datum > b.datum ? 1 : 0); });
+
+    var ok = saveKoerperState();
+    if (!ok) {
+      /* Analog zu trainUploadPrPhoto: der In-Memory-Fallback von safeLSSet reicht hier nicht,
+         weil er beim Neuladen verloren geht und der Anzeige einen Check-in vorgaukeln wuerde,
+         der nie dauerhaft gespeichert wurde. Deshalb Aenderung zuruecknehmen (kein Datenverlust
+         zwischen Anzeige und tatsaechlich Gespeichertem) und im UI aktiv informieren. */
+      var idx = koerperState.checkins.indexOf(checkin);
+      if (idx !== -1) { koerperState.checkins.splice(idx, 1); }
+      koerperShowStatus('Check-in konnte nicht gespeichert werden, vermutlich ist der Speicherplatz voll. Evtl. ältere Check-ins mit Fotos löschen und erneut versuchen.', true);
+      dbgLog('koerperSaveCheckin: Speichern fehlgeschlagen (vermutlich Speicherplatz voll), Check-in verworfen.');
+      renderKoerperCheckin();
+      return;
+    }
+
+    var gesamtBytes = JSON.stringify(koerperState).length;
+    dbgLog('koerperSaveCheckin: Check-in vom ' + datum + ' gespeichert. Gesamtgröße aller Körper-Check-in-Daten ca. ' + Math.round(gesamtBytes / 1024) + ' KB.');
+
+    gewichtInput.value = '';
+    if (kfaInput) { kfaInput.value = ''; }
+    if (vorneInput) { vorneInput.value = ''; }
+    if (seiteInput) { seiteInput.value = ''; }
+    if (rueckenInput) { rueckenInput.value = ''; }
+    koerperShowStatus('Check-in gespeichert.', false);
+    renderKoerperCheckin();
+  });
+}
+
+function koerperDeleteCheckin(id) {
+  if (!confirm('Diesen Check-in wirklich löschen?')) { return; }
+  var idx = -1;
+  for (var i = 0; i < koerperState.checkins.length; i++) {
+    if (koerperState.checkins[i].id === id) { idx = i; break; }
+  }
+  if (idx === -1) { return; }
+  var removed = koerperState.checkins.splice(idx, 1)[0];
+  var ok = saveKoerperState();
+  if (!ok) {
+    koerperState.checkins.splice(idx, 0, removed);
+    koerperShowStatus('Löschen konnte nicht gespeichert werden (Speicherfehler).', true);
+    dbgLog('koerperDeleteCheckin: Speichern nach Löschen fehlgeschlagen, Änderung zurückgenommen.');
+    renderKoerperCheckin();
+    return;
+  }
+  dbgLog('koerperDeleteCheckin: Check-in ' + id + ' gelöscht.');
+  renderKoerperCheckin();
+}
+
+function koerperFmtDate(d) {
+  var parts = (d || '').split('-');
+  if (parts.length !== 3) { return d || ''; }
+  return parts[2] + '.' + parts[1] + '.';
+}
+function koerperDaysBetween(d1, d2) {
+  return Math.max(1, Math.round((new Date(d2) - new Date(d1)) / 86400000));
+}
+
+/* Berechnet die "smarten" Kennzahlen ausschliesslich aus den tatsaechlich eingetragenen
+   Check-ins (chronologisch sortiert erwartet) -- keine geschaetzten/erfundenen Werte. */
+function koerperComputeStats(sorted) {
+  if (sorted.length < 2) { return null; }
+  var first = sorted[0];
+  var last = sorted[sorted.length - 1];
+  var deltaKg = last.gewicht - first.gewicht;
+  var deltaPct = first.gewicht ? (deltaKg / first.gewicht) * 100 : 0;
+  var tageGesamt = koerperDaysBetween(first.datum, last.datum);
+  var wochenGesamt = tageGesamt / 7;
+  var proWoche = wochenGesamt > 0 ? deltaKg / wochenGesamt : 0;
+
+  /* Trend der letzten 4 Wochen vs. davor: mittlere woechentliche Veraenderung in beiden
+     Fenstern, verglichen anhand der jeweils ersten/letzten Messung im Fenster. Braucht
+     mindestens 2 Check-ins in jedem der beiden Fenster, sonst bleibt der Wert null und
+     der Text weist explizit auf zu wenig Daten hin statt etwas zu erfinden. */
+  var grenze = new Date(new Date(last.datum).getTime() - 28 * 86400000);
+  var neuFenster = sorted.filter(function(c) { return new Date(c.datum) >= grenze; });
+  var altFenster = sorted.filter(function(c) { return new Date(c.datum) < grenze; });
+  var trendNeu = null, trendAlt = null;
+  if (neuFenster.length >= 2) {
+    var n0 = neuFenster[0], n1 = neuFenster[neuFenster.length - 1];
+    var tN = koerperDaysBetween(n0.datum, n1.datum);
+    trendNeu = (n1.gewicht - n0.gewicht) / (tN / 7);
+  }
+  if (altFenster.length >= 2) {
+    var a0 = altFenster[0], a1 = altFenster[altFenster.length - 1];
+    var tA = koerperDaysBetween(a0.datum, a1.datum);
+    trendAlt = (a1.gewicht - a0.gewicht) / (tA / 7);
+  }
+  return { deltaKg: deltaKg, deltaPct: deltaPct, proWoche: proWoche, trendNeu: trendNeu, trendAlt: trendAlt };
+}
+
+/* Baut EIN einzelnes Liniendiagramm fuer genau eine Groesse (Gewicht ODER Koerperfett).
+   Bewusst zwei getrennte Ein-Achsen-Diagramme statt einem gemeinsamen Chart mit zwei
+   Y-Achsen: kg und % haben unterschiedliche Skalen, ein zweiachsiges Diagramm waere
+   irrefuehrend (Dataviz-Vorgabe: nie zwei Y-Skalen in einem Chart -- stattdessen zwei
+   Charts/Small-Multiples). Eine Serie pro Chart braucht keine Legende, der Titel der
+   Karte benennt die Groesse bereits. */
+function koerperBuildLineSvg(entries, key, colorVar, unit, decimals) {
+  var pts = entries.filter(function(c) { return c[key] != null; });
+  if (pts.length < 2) { return null; }
+  var w = 640, h = 190, padL = 46, padR = 16, padT = 18, padB = 28;
+  var innerW = w - padL - padR, innerH = h - padT - padB;
+  var vals = pts.map(function(c) { return c[key]; });
+  var minV = Math.min.apply(null, vals), maxV = Math.max.apply(null, vals);
+  var span = maxV - minV;
+  var padV = span < 0.1 ? Math.max(1, Math.abs(maxV) * 0.05 || 1) : span * 0.18;
+  var yMin = minV - padV, yMax = maxV + padV;
+  var n = pts.length;
+  function xFor(i) { return n === 1 ? padL : padL + (i * (innerW / (n - 1))); }
+  function yFor(v) { return padT + innerH - ((v - yMin) / (yMax - yMin)) * innerH; }
+
+  var linePts = [];
+  var circles = '';
+  for (var i = 0; i < n; i++) {
+    var x = xFor(i), y = yFor(pts[i][key]);
+    linePts.push(x.toFixed(1) + ',' + y.toFixed(1));
+    circles += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4" fill="' + colorVar + '" stroke="var(--surface-1)" stroke-width="2">' +
+      '<title>' + trainEsc(koerperFmtDate(pts[i].datum) + ': ' + pts[i][key].toFixed(decimals) + ' ' + unit) + '</title></circle>';
+  }
+  var linePath = 'M' + linePts.join(' L');
+  var areaPath = linePath + ' L' + xFor(n - 1).toFixed(1) + ',' + (padT + innerH).toFixed(1) +
+                 ' L' + xFor(0).toFixed(1) + ',' + (padT + innerH).toFixed(1) + ' Z';
+
+  var lastX = xFor(n - 1), lastY = yFor(pts[n - 1][key]);
+  var maxY = yFor(maxV), minY = yFor(minV);
+
+  return (
+    '<svg width="100%" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet">' +
+      '<line x1="' + padL + '" y1="' + (padT + innerH).toFixed(1) + '" x2="' + (w - padR) + '" y2="' + (padT + innerH).toFixed(1) + '" stroke="var(--text-muted)" stroke-width="1"/>' +
+      '<path d="' + areaPath + '" fill="' + colorVar + '" opacity="0.1"/>' +
+      '<path d="' + linePath + '" fill="none" stroke="' + colorVar + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      circles +
+      '<text x="' + (padL - 6) + '" y="' + (maxY + 4).toFixed(1) + '" text-anchor="end" class="ref-label">' + maxV.toFixed(decimals) + '</text>' +
+      '<text x="' + (padL - 6) + '" y="' + (minY + 4).toFixed(1) + '" text-anchor="end" class="ref-label">' + minV.toFixed(decimals) + '</text>' +
+      '<text x="' + lastX.toFixed(1) + '" y="' + Math.max(lastY - 10, padT + 4).toFixed(1) + '" text-anchor="end" class="line-value-label">' + pts[n - 1][key].toFixed(decimals) + ' ' + unit + '</text>' +
+      '<g class="line-labels">' +
+        '<text x="' + padL + '" y="' + (h - 6) + '" text-anchor="start">' + trainEsc(koerperFmtDate(pts[0].datum)) + '</text>' +
+        '<text x="' + (w - padR) + '" y="' + (h - 6) + '" text-anchor="end">' + trainEsc(koerperFmtDate(pts[n - 1].datum)) + '</text>' +
+      '</g>' +
+    '</svg>'
+  );
+}
+
+function koerperRenderStatsAndCharts() {
+  var statsArea = document.getElementById('koerper-stats-area');
+  var chartArea = document.getElementById('koerper-chart-area');
+  if (!statsArea || !chartArea) { return; }
+
+  var sorted = koerperState.checkins.slice().sort(function(a, b) { return a.datum < b.datum ? -1 : (a.datum > b.datum ? 1 : 0); });
+
+  if (sorted.length < 2) {
+    statsArea.innerHTML = '';
+    var card = document.createElement('div');
+    card.className = 'chart-card';
+    card.style.marginBottom = '20px';
+    card.innerHTML = '<p class="koerper-empty-hint">Noch zu wenig Daten für einen Verlauf. Mindestens 2 Check-ins nötig.</p>';
+    chartArea.innerHTML = '';
+    chartArea.appendChild(card);
+    return;
+  }
+
+  var stats = koerperComputeStats(sorted);
+  var trendText;
+  if (stats.trendNeu == null || stats.trendAlt == null) {
+    trendText = 'Noch zu wenig Daten für einen Trendvergleich (mind. 2 Check-ins vor und 2 nach der 4-Wochen-Grenze nötig).';
+  } else {
+    var diff = stats.trendNeu - stats.trendAlt;
+    if (Math.abs(diff) < 0.05) {
+      trendText = 'Tempo der letzten 4 Wochen (' + stats.trendNeu.toFixed(2) + ' kg/Woche) etwa gleich wie davor (' + stats.trendAlt.toFixed(2) + ' kg/Woche).';
+    } else if (stats.trendNeu < stats.trendAlt) {
+      trendText = 'Gewichtsveränderung beschleunigt sich: letzte 4 Wochen ' + stats.trendNeu.toFixed(2) + ' kg/Woche vs. davor ' + stats.trendAlt.toFixed(2) + ' kg/Woche.';
+    } else {
+      trendText = 'Gewichtsveränderung verlangsamt sich: letzte 4 Wochen ' + stats.trendNeu.toFixed(2) + ' kg/Woche vs. davor ' + stats.trendAlt.toFixed(2) + ' kg/Woche.';
+    }
+  }
+
+  statsArea.innerHTML =
+    '<div class="stat-row" style="margin-top:0; margin-bottom:20px;">' +
+      '<div class="stat-tile">' +
+        '<div class="label">Gesamtveränderung Gewicht</div>' +
+        '<div class="value' + (stats.deltaKg <= 0 ? ' good' : '') + '">' + (stats.deltaKg >= 0 ? '+' : '') + stats.deltaKg.toFixed(1) + ' kg</div>' +
+        '<div class="sub">' + (stats.deltaPct >= 0 ? '+' : '') + stats.deltaPct.toFixed(1) + ' % seit erstem Check-in</div>' +
+      '</div>' +
+      '<div class="stat-tile">' +
+        '<div class="label">Ø Veränderung pro Woche</div>' +
+        '<div class="value">' + (stats.proWoche >= 0 ? '+' : '') + stats.proWoche.toFixed(2) + ' kg</div>' +
+        '<div class="sub">Über den gesamten Zeitraum</div>' +
+      '</div>' +
+      '<div class="stat-tile">' +
+        '<div class="label">Erster Check-in</div>' +
+        '<div class="value">' + sorted[0].gewicht.toFixed(1) + ' kg</div>' +
+        '<div class="sub">' + trainEsc(koerperFmtDate(sorted[0].datum)) + '</div>' +
+      '</div>' +
+      '<div class="stat-tile">' +
+        '<div class="label">Letzter Check-in</div>' +
+        '<div class="value">' + sorted[sorted.length - 1].gewicht.toFixed(1) + ' kg</div>' +
+        '<div class="sub">' + trainEsc(koerperFmtDate(sorted[sorted.length - 1].datum)) + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<p class="koerper-trend-note">' + trainEsc(trendText) + '</p>';
+
+  var gewichtSvg = koerperBuildLineSvg(sorted, 'gewicht', 'var(--series-blue)', 'kg', 1);
+  var kfaSvg = koerperBuildLineSvg(sorted, 'koerperfett', 'var(--series-aqua)', '%', 1);
+
+  chartArea.innerHTML =
+    '<div class="chart-row" style="margin-bottom:20px;">' +
+      '<div class="chart-card">' +
+        '<h3>Gewicht</h3>' +
+        '<p class="chart-sub">Verlauf in kg über alle Check-ins</p>' +
+        (gewichtSvg || '<p class="koerper-empty-hint">Noch zu wenig Daten.</p>') +
+      '</div>' +
+      '<div class="chart-card">' +
+        '<h3>Körperfett</h3>' +
+        '<p class="chart-sub">Verlauf in % über alle Check-ins mit Körperfett-Angabe</p>' +
+        (kfaSvg || '<p class="koerper-empty-hint">Noch zu wenig Körperfett-Daten für einen Verlauf (mind. 2 Check-ins mit Körperfett-Angabe nötig).</p>') +
+      '</div>' +
+    '</div>';
+}
+
+var KOERPER_WINKEL = [
+  { key: 'vorne', label: 'Vorne' },
+  { key: 'seite', label: 'Seite' },
+  { key: 'ruecken', label: 'Rücken' }
+];
+
+/* Vorher/Nachher: pro Blickwinkel automatisch das ERSTE und LETZTE Check-in mit einem
+   Foto zu genau diesem Winkel heraussuchen -- nur anzeigen, wenn es mindestens zwei
+   verschiedene Check-ins mit Foto zu diesem Winkel gibt. */
+function koerperRenderCompare() {
+  var area = document.getElementById('koerper-compare-area');
+  if (!area) { return; }
+  var sorted = koerperState.checkins.slice().sort(function(a, b) { return a.datum < b.datum ? -1 : (a.datum > b.datum ? 1 : 0); });
+
+  var pairsHtml = '';
+  KOERPER_WINKEL.forEach(function(w) {
+    var mitFoto = sorted.filter(function(c) { return c.fotos && c.fotos[w.key]; });
+    if (mitFoto.length < 2) { return; }
+    var first = mitFoto[0];
+    var last = mitFoto[mitFoto.length - 1];
+    pairsHtml +=
+      '<div class="koerper-compare-pair">' +
+        '<div>' +
+          '<img src="' + first.fotos[w.key] + '" alt="' + trainEsc(w.label) + ' vorher" onclick="showImageLightbox(this.src)">' +
+          '<div class="koerper-compare-caption">' + trainEsc(koerperFmtDate(first.datum)) + ' · ' + first.gewicht.toFixed(1) + ' kg</div>' +
+        '</div>' +
+        '<span class="koerper-compare-arrow">→</span>' +
+        '<div>' +
+          '<img src="' + last.fotos[w.key] + '" alt="' + trainEsc(w.label) + ' nachher" onclick="showImageLightbox(this.src)">' +
+          '<div class="koerper-compare-caption">' + trainEsc(koerperFmtDate(last.datum)) + ' · ' + last.gewicht.toFixed(1) + ' kg</div>' +
+        '</div>' +
+      '</div>';
+  });
+
+  if (!pairsHtml) {
+    area.innerHTML = '';
+    return;
+  }
+  area.innerHTML =
+    '<div class="chart-card" style="margin-bottom:20px;">' +
+      '<h3>Vorher / Nachher</h3>' +
+      '<p class="chart-sub">Erstes vs. letztes Foto je Blickwinkel, automatisch aus den Check-ins ermittelt</p>' +
+      '<div class="koerper-compare-row">' + pairsHtml + '</div>' +
+    '</div>';
+}
+
+function koerperRenderTimeline() {
+  var list = document.getElementById('koerper-timeline-list');
+  if (!list) { return; }
+  list.innerHTML = '';
+
+  if (koerperState.checkins.length === 0) {
+    var empty = document.createElement('div');
+    empty.className = 'chart-card';
+    empty.innerHTML = '<p class="koerper-empty-hint" style="margin:0;">Noch kein Check-in eingetragen. Oben Gewicht (und optional Fotos) eintragen.</p>';
+    list.appendChild(empty);
+    return;
+  }
+
+  /* neueste zuerst, damit der aktuelle Stand ohne Scrollen sichtbar ist */
+  var sortedDesc = koerperState.checkins.slice().sort(function(a, b) { return a.datum > b.datum ? -1 : (a.datum < b.datum ? 1 : 0); });
+
+  sortedDesc.forEach(function(c) {
+    var item = document.createElement('div');
+    item.className = 'koerper-timeline-item';
+
+    var main = document.createElement('div');
+    main.className = 'koerper-timeline-main';
+    var dateEl = document.createElement('div');
+    dateEl.className = 'koerper-timeline-date';
+    dateEl.textContent = c.datum;
+    var valEl = document.createElement('div');
+    valEl.className = 'koerper-timeline-values';
+    valEl.textContent = c.gewicht.toFixed(1) + ' kg' + (c.koerperfett != null ? ' · ' + c.koerperfett.toFixed(1) + ' % KFA' : '');
+    main.appendChild(dateEl);
+    main.appendChild(valEl);
+    item.appendChild(main);
+
+    var photos = document.createElement('div');
+    photos.className = 'koerper-timeline-photos';
+    KOERPER_WINKEL.forEach(function(w) {
+      if (c.fotos && c.fotos[w.key]) {
+        var img = document.createElement('img');
+        img.src = c.fotos[w.key];
+        img.alt = w.label + ' ' + c.datum;
+        img.title = w.label;
+        img.onclick = (function(url) { return function() { showImageLightbox(url); }; })(c.fotos[w.key]);
+        photos.appendChild(img);
+      }
+    });
+    if (photos.children.length > 0) { item.appendChild(photos); }
+
+    var delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'train-small-btn danger';
+    delBtn.textContent = 'Löschen';
+    delBtn.onclick = (function(id) { return function() { koerperDeleteCheckin(id); }; })(c.id);
+    item.appendChild(delBtn);
+
+    list.appendChild(item);
+  });
+}
+
+function renderKoerperCheckin() {
+  koerperRenderStatsAndCharts();
+  koerperRenderCompare();
+  koerperRenderTimeline();
+}
+
+(function koerperInitDateDefault() {
+  var d = document.getElementById('koerper-datum-input');
+  if (d && !d.value) { d.value = new Date().toISOString().slice(0, 10); }
+})();
+
+renderKoerperCheckin();
+dbgLog('Körper-Check-in geladen, Check-ins: ' + koerperState.checkins.length);
 </script>
 </body>
 </html>
